@@ -1,0 +1,32 @@
+{
+  "name": "@deepseek-ai/dsh-find",
+  "description": "会话内查找：Ctrl+F 查找条 + 高亮 + 上/下一处（DOM 文本级匹配，支持中文）",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1"
+  },
+  "license": "MIT",
+  "files": [
+    "lib/index.js",
+    "lib/client.js"
+  ]
+}

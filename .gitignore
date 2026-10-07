@@ -1,0 +1,35 @@
+# 依赖与构建产物
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+
+# 本地凭据：绝不提交
+# 各插件的 config.json 保存平台 token / API Key，仅本机使用
+plugins/*/config.json
+deploy/*/package/config.json
+**/.credentials.yaml
+**/.credentials.yml
+**/*.token
+**/*.key
+.env
+.env.*
+
+# 运行时数据
+*.log
+logs/
+tmp/
+.cache/
+**/.last-data.json
+
+# 备份残留
+*.bak
+*.bak-*
+*.backup
+*~
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

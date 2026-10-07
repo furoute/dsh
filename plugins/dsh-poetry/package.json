@@ -1,0 +1,35 @@
+{
+  "name": "@deepseek-ai/dsh-poetry",
+  "description": "侧边栏诗泉小插件：从 poetry.palemoky.com 在线 API 随机展示一首中国古典诗词的浏览器面板",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-primitives"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "react": "^18.2.0"
+  },
+  "license": "MIT",
+  "files": [
+    "lib/index.js",
+    "lib/client.js"
+  ]
+}

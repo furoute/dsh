@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="920" viewBox="0 0 1000 920" font-family="system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="920" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="500" y="44" text-anchor="middle" font-size="26" font-weight="700" fill="#0f172a">DSH 安全架构概览</text>
+  <text x="500" y="70" text-anchor="middle" font-size="13" fill="#64748b">DeepSeek Harness · 桌面 Agent 的「策略栅栏 + 人审批」模型</text>
+
+  <!-- Legend -->
+  <rect x="742" y="92" width="14" height="14" rx="3" fill="#ecfdf5" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="762" y="104" font-size="12" fill="#475569">受信侧（掌控决策）</text>
+  <rect x="742" y="114" width="14" height="14" rx="3" fill="#fafafa" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="762" y="126" font-size="12" fill="#475569">受约束侧（模型可控）</text>
+
+  <!-- ===== Layer 1: 人 ===== -->
+  <rect x="250" y="96" width="500" height="104" rx="12" fill="#ecfdf5" stroke="#16a34a" stroke-width="2"/>
+  <text x="500" y="124" text-anchor="middle" font-size="17" font-weight="700" fill="#065f46">用户 · 最终裁决者</text>
+  <text x="500" y="150" text-anchor="middle" font-size="13.5" fill="#374151">审批升级请求：只会看到「工具名 + 模型原话理由」</text>
+  <text x="500" y="174" text-anchor="middle" font-size="13.5" fill="#374151">只提供 allowed-once，没有「永远允许」</text>
+  <text x="500" y="194" text-anchor="middle" font-size="12" fill="#94a3b8">无应答方 → 判定 unavailable → 动作失败关闭</text>
+
+  <!-- arrow 人 -> 策略 -->
+  <line x1="500" y1="200" x2="500" y2="234" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="516" y="222" font-size="12" fill="#475569">审批结果（一次性）</text>
+
+  <!-- ===== Layer 2: 权限预设 ===== -->
+  <rect x="250" y="242" width="500" height="112" rx="12" fill="#ecfdf5" stroke="#16a34a" stroke-width="2"/>
+  <text x="500" y="270" text-anchor="middle" font-size="17" font-weight="700" fill="#065f46">权限预设 · 两个旋钮的绑定</text>
+  <text x="500" y="296" text-anchor="middle" font-size="13.5" fill="#374151">沙箱模式 × 审批策略 —— /permission 一键切换</text>
+  <text x="500" y="320" text-anchor="middle" font-size="12.5" fill="#374151">read-only · ask　│　workspace-write · ask　│　danger-full-access · never</text>
+  <text x="500" y="342" text-anchor="middle" font-size="12" fill="#94a3b8">策略随调用携带（policy rides the call），非全局固定</text>
+
+  <!-- arrow 策略 -> 强制 -->
+  <line x1="500" y1="354" x2="500" y2="390" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="516" y="376" font-size="12" fill="#475569">解析出的模式 + 工作区根</text>
+
+  <!-- ===== Layer 3: 强制层（两个并列能力）===== -->
+  <rect x="118" y="398" width="352" height="130" rx="12" fill="#ecfdf5" stroke="#16a34a" stroke-width="2"/>
+  <text x="294" y="424" text-anchor="middle" font-size="15" font-weight="700" fill="#065f46">ctx.shell · 进程沙箱</text>
+  <text x="294" y="448" text-anchor="middle" font-size="12.5" fill="#374151">Linux：bubblewrap / Landlock</text>
+  <text x="294" y="468" text-anchor="middle" font-size="12.5" fill="#374151">macOS：Seatbelt</text>
+  <text x="294" y="488" text-anchor="middle" font-size="12.5" fill="#374151">Windows：ACL 受限令牌</text>
+  <text x="294" y="512" text-anchor="middle" font-size="11.5" fill="#b45309">Windows 与旧内核 = partial 强制</text>
+
+  <rect x="530" y="398" width="352" height="130" rx="12" fill="#ecfdf5" stroke="#16a34a" stroke-width="2"/>
+  <text x="706" y="424" text-anchor="middle" font-size="15" font-weight="700" fill="#065f46">ctx.fs · 文件栅栏</text>
+  <text x="706" y="448" text-anchor="middle" font-size="12.5" fill="#374151">仅拦截「写」：writeText / editText</text>
+  <text x="706" y="468" text-anchor="middle" font-size="12.5" fill="#374151">读取一律放行 · 路径规范化后再判</text>
+  <text x="706" y="488" text-anchor="middle" font-size="12.5" fill="#374151">拒绝抛出 FS_SANDBOX_DENIED</text>
+  <text x="706" y="512" text-anchor="middle" font-size="11.5" fill="#b45309">同一份 writableRoots 派生，两族不漂移</text>
+
+  <!-- fail closed note -->
+  <rect x="118" y="540" width="764" height="34" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+  <text x="500" y="562" text-anchor="middle" font-size="12.5" font-weight="600" fill="#b91c1c">失败关闭：无法强制请求的模式 → SANDBOX_UNAVAILABLE，绝不静默放行</text>
+
+  <!-- Trust boundary -->
+  <line x1="90" y1="596" x2="910" y2="596" stroke="#dc2626" stroke-width="2" stroke-dasharray="9 7"/>
+  <text x="90" y="588" font-size="13" font-weight="600" fill="#dc2626">信任边界 —— 模型可控，但一切都只是「策略检查」，不是内核边界</text>
+
+  <!-- arrow escalation (bidirectional), placed clear of the fail-closed strip -->
+  <line x1="740" y1="530" x2="740" y2="632" stroke="#0f766e" stroke-width="2.5" marker-start="url(#arrow2)" marker-end="url(#arrow2)"/>
+  <text x="790" y="616" font-size="12" font-weight="600" fill="#0f766e">升级阶梯</text>
+  <text x="790" y="632" font-size="11.5" fill="#0f766e">严格更宽 ·</text>
+  <text x="790" y="647" font-size="11.5" fill="#0f766e">一次一调用</text>
+
+  <!-- ===== Layer 4: 模型 / 工具 ===== -->
+  <rect x="250" y="640" width="500" height="118" rx="12" fill="#fafafa" stroke="#94a3b8" stroke-width="2"/>
+  <text x="500" y="668" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">模型 · 工具调用层</text>
+  <text x="500" y="694" text-anchor="middle" font-size="13.5" fill="#475569">bash / pwsh / 文件编辑 / 子 Agent / 其他工具</text>
+  <text x="500" y="717" text-anchor="middle" font-size="12.5" fill="#475569">被拒时看到：[sandbox: file access denied under &lt;mode&gt; mode]</text>
+  <text x="500" y="739" text-anchor="middle" font-size="12" fill="#94a3b8">可携 sandbox_permissions + justification 重试一次</text>
+
+  <!-- ===== Layer 5: 宿主与副作用 ===== -->
+  <rect x="250" y="778" width="500" height="86" rx="12" fill="#fafafa" stroke="#94a3b8" stroke-width="2"/>
+  <text x="500" y="804" text-anchor="middle" font-size="16" font-weight="700" fill="#0f172a">宿主操作系统 · 同一内核 / 同一文件系统</text>
+  <text x="500" y="828" text-anchor="middle" font-size="13" fill="#475569">DSH 是「同世界遏制」：不是容器，不是虚拟机</text>
+  <text x="500" y="850" text-anchor="middle" font-size="12" fill="#94a3b8">需要真隔离时，应换用容器 / MicroVM / 远程执行器</text>
+
+  <!-- Footer -->
+  <text x="500" y="896" text-anchor="middle" font-size="12.5" fill="#64748b">策略只覆盖「文件效果」—— 不含网络、进程、系统调用与凭证限制；这是遏制，不是安全边界</text>
+</svg>

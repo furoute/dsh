@@ -1,0 +1,39 @@
+{
+  "name": "@deepseek-ai/dsh-billing",
+  "description": "Shows DeepSeek 充值余额 (recharge balance) and session 消费金额 (consumption) in the chat composer dock",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ],
+      "platform": "web"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-credentials": "^0.1.0-rc.6"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "react": "^18.2.0"
+  },
+  "license": "MIT",
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "lib/fetch-helper.js",
+    "config.json"
+  ]
+}

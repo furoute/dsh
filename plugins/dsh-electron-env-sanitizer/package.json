@@ -1,0 +1,20 @@
+{
+  "name": "@deepseek-ai/dsh-electron-env-sanitizer",
+  "description": "Windows 桌面版修复：清除宿主进程里泄漏的 ELECTRON_RUN_AS_NODE，避免 VS Code / Cursor / Windsurf / Zed 等 Electron 系应用被当作 Node 启动（表现为「操作失败，请重试」）。",
+  "version": "0.2.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.4"
+  },
+  "license": "MIT",
+  "files": [
+    "lib/index.js"
+  ]
+}
