@@ -23,9 +23,12 @@ tags = ["key", "credential"]
 [[rules]]
 id = "hardcoded-localhost-proxy"
 description = "硬编码的本地代理端口（可移植性问题，且暴露本机环境）"
-# 仅提示、不阻断：排除文档中说明 DSH web 默认端口 3080 的正当用法
-regex = '''127\.0\.0\.1:(?!3080\b)\d{4,5}'''
+# 注意：gitleaks 使用 Go 的 RE2 引擎，**不支持负向先行断言 `(?!...)`**——
+#       写成 `(?!3080)` 会导致 gitleaks 直接 panic 退出（本仓库实测踩过，见 SECURITY.md）。
+#       因此这里匹配全部 127.0.0.1:<端口>，再用下方 allowlist 排除 DSH web 的默认端口 3080。
+regex = '''127\.0\.0\.1:\d{4,5}'''
 tags = ["portability"]
+path = '''\.(js|mjs|cjs|ts|py|sh|ps1|cmd|bat|json|ya?ml|toml|md)$'''
 
 [allowlist]
 description = "已知的安全写法"
@@ -39,6 +42,9 @@ regexes = [
   # 扫描规则自身的模式定义（scripts/ 里必然出现 sk- 等字样）
   '''sk-\[A-Za-z0-9\]''',
   '''gh\[opsu\]_''',
+  # DSH web 的默认端口 3080：文档中"浏览器打开 http://127.0.0.1:3080"属正当用法，
+  # 不是个人环境泄露（该端口由 DSH 固定，非用户可配置）
+  '''127\.0\.0\.1:3080''',
 ]
 paths = [
   # 本机专用文件（被 .gitignore 排除，本就不会推送）
