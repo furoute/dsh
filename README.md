@@ -137,6 +137,9 @@ pwsh -File scripts\sanitize-copy.ps1   # 白名单复制 + 自动脱敏
 pwsh -File scripts\audit-secrets.ps1   # 审计闸门，发现敏感信息即非零退出
 ```
 
+> 最初本仓库是用 GitHub REST API 推送的（开发机未装 git）。现已改用
+> **标准 git 流程**维护，CI 闸门随每次 push 自动运行。
+
 ### 脱敏策略
 
 | 类别 | 处理 |

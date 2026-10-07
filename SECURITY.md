@@ -100,6 +100,34 @@ gitleaks detect --config .gitleaks.toml --source . --redact -v
 gitleaks detect --config .gitleaks.toml --source . --log-opts="--all"   # 含全历史
 ```
 
+### 一道真实发生的闸门拦截（值得记录）
+
+本仓库接入 CI 后**第一次运行就失败了**，但原因**不是密钥泄露**：
+
+```
+Error parsing '127\.0\.0\.1:(?!3080\b)\d{4,5}': invalid perl operator: (?! 
+panic: regexp: Compile(...): bad perl operator
+```
+
+我在自写规则里用了**负向先行断言 `(?!...)`**，而 gitleaks 基于 Go 的 **RE2 引擎，不支持该语法**，
+直接 panic 退出。已改为"匹配全部端口 + allowlist 排除 3080"的等价写法。
+
+> 这个小事故本身就是**独立闸门价值的实证**：
+> **第三方工具不会像自写扫描器那样"默默接受作者的写法"**——
+> 它当场拒绝，暴露出我规则里的一个真实缺陷。
+> 如果只有自家脚本，这处问题会一直潜伏到某天规则失效时才被发现。
+
+### 本地如何复现
+
+```bash
+# 安装（Windows 可用 winget，或从 release 页下载解压）
+gitleaks version
+
+# 全历史扫描
+gitleaks detect --config .gitleaks.toml --source . --redact --log-opts="--all"
+# 期望输出：INF no leaks found
+```
+
 ## 六、独立复核记录
 
 本仓库首次公开前后，曾邀请 3 个独立 AI 智能体（**均未使用本仓库自带的扫描器**）
