@@ -105,15 +105,15 @@ if (Test-Path "$env:USERPROFILE\.codex\auth.json") {
 
 在 DSH 会话里，发起一个后台子代理任务，指定 `subagent_codex` 模式、`run_in_background` 为 true，例如：
 
-> 用 subagent_codex 后台跑：列出当前目录 `D:\LLM\DSH` 下的文件和文件夹。run_in_background = true。
+> 用 subagent_codex 后台跑：列出当前目录 `<DSH_ROOT>` 下的文件和文件夹。run_in_background = true。
 
 任务会作为一个后台 job 出现在 **Job Panel** 里，状态经历 running → completed。
 
 ### 2.3 验证结果
 
 - Job Panel 中该任务变为 `completed`；
-- 返回内容应包含 6 个文件夹 + 4 个文件的清单（与 `D:\LLM\DSH` 实际内容一致）；
-- 可手动核对：`Get-ChildItem "D:\LLM\DSH"`。
+- 返回内容应包含 6 个文件夹 + 4 个文件的清单（与 `<DSH_ROOT>` 实际内容一致）；
+- 可手动核对：`Get-ChildItem "<DSH_ROOT>"`。
 
 ---
 

@@ -4,7 +4,8 @@
   用法：pwsh -File audit-secrets.ps1 -Target <目录>
 #>
 param(
-  [string]$Target = 'D:\LLM\DSH\work\_dsh-archive'
+  # 默认扫描本脚本所在目录的上一级（归档仓库根），不硬编码本机路径
+  [string]$Target = (Split-Path -Parent $PSScriptRoot)
 )
 
 $ErrorActionPreference = 'Stop'
@@ -19,9 +20,13 @@ $Blockers = [ordered]@{
   '私钥 PEM 块'                = '-----BEGIN [A-Z ]*PRIVATE KEY-----'
   'Bearer 长令牌'              = 'Bearer\s+[A-Za-z0-9\-_\.]{25,}'
   '疑似 32+ 位十六进制密钥'     = '(?i)(api[_-]?key|secret|token|password)["'']?\s*[:=]\s*["''][A-Za-z0-9\+/]{20,}["'']'
-  '本机用户名残留'              = 'Tian' + '_Tian'
-  '其它用户目录绝对路径'        = '[A-Za-z]:\\Users\\(?!<USER>)[A-Za-z0-9_.\-]+'
 }
+
+# 用户名检测：运行时从环境变量取值，源码内不出现任何真实用户名
+if ($env:USERNAME) {
+  $Blockers['本机用户名残留'] = [regex]::Escape($env:USERNAME)
+}
+$Blockers['其它用户目录绝对路径'] = '[A-Za-z]:\\Users\\(?!<USER>)[A-Za-z0-9_.\-]+'
 
 $SkipDirs = @('node_modules','[\\/]\.git[\\/]','__pycache__')
 

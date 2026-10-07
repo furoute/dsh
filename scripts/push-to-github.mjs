@@ -12,13 +12,24 @@
  */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { join, relative, sep, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const OWNER = 'furoute';
 const REPO = 'dsh';
 const BRANCH = 'main';
-const ROOT = 'D:\\LLM\\DSH\\work\\_dsh-archive';
-const PROXY = 'http://127.0.0.1:7897';
+
+// 归档根目录：默认取「本脚本所在目录的上一级」，也可用 --root 或 ARCHIVE_ROOT 指定。
+// 不在源码里硬编码本机绝对路径（既泄露目录结构，也让别人 clone 后跑不通）。
+const HERE = dirname(fileURLToPath(import.meta.url));
+const rootArgIdx = process.argv.indexOf('--root');
+const ROOT = process.env.ARCHIVE_ROOT
+  || (rootArgIdx !== -1 ? process.argv[rootArgIdx + 1] : null)
+  || join(HERE, '..');
+
+// 代理：优先环境变量，其次系统代理；都没有则直连。
+const PROXY = process.env.HTTPS_PROXY || process.env.https_proxy
+  || process.env.HTTP_PROXY || process.env.http_proxy || null;
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry-run');
@@ -43,8 +54,31 @@ import http from 'node:http';
 import https from 'node:https';
 
 function requestViaProxy(method, url, headers, body) {
+  const target = new URL(url);
+
+  // 无代理：直接 TLS 请求
+  if (!PROXY) {
+    return new Promise((resolve, reject) => {
+      const r = https.request({
+        method, host: target.hostname,
+        path: target.pathname + target.search,
+        headers: { ...headers, Host: target.hostname },
+      }, (resp) => {
+        const chunks = [];
+        resp.on('data', (c) => chunks.push(c));
+        resp.on('end', () => resolve({
+          status: resp.statusCode,
+          ok: resp.statusCode >= 200 && resp.statusCode < 300,
+          text: Buffer.concat(chunks).toString('utf8'),
+        }));
+      });
+      r.on('error', reject);
+      if (body) r.write(body);
+      r.end();
+    });
+  }
+
   return new Promise((resolve, reject) => {
-    const target = new URL(url);
     const proxy = new URL(PROXY);
 
     // 先与代理建立 CONNECT 隧道

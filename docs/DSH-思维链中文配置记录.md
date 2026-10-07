@@ -115,7 +115,7 @@ DSH 的 `dsh-agent-instructions` 插件会自动读取 **`$DSH_HOME/AGENTS.md`**
 | 文件 | 状态 |
 |---|---|
 | `~/.dsh/.agent-presets/standard-codex/agent.cordis.yml` | 已修改（persona.text 追加语言规则） |
-| `C:\Furoute\LLM\DSH\DSH-思维链中文配置记录.md` | 本文档（新建+后续补充） |
+| `<DSH_ROOT>\DSH-思维链中文配置记录.md` | 本文档（新建+后续补充） |
 | `~/.dsh/settings.yaml` | 未改动（`agent-presets.default: standard-codex`；`reasoningEffort: off`） |
 | `~/.dsh/profiles/web/cordis.patch.yml` | 曾误加 `persona-zh-thinking`，已回滚为仅含原插件项 |
 

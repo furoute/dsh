@@ -158,8 +158,8 @@ $base = "$env:LOCALAPPDATA\Programs\DeepSeek Harness\resources"
 $node = "$base\runtime\primary-runtime\dependencies\node\bin\node.exe"
 $pnpm = "$base\runtime\pnpm\bin\pnpm.cjs"
 
-$env:HTTP_PROXY = "http://127.0.0.1:7897"   # 按需
-$env:HTTPS_PROXY = "http://127.0.0.1:7897"
+$env:HTTP_PROXY = "http://127.0.0.1:<PORT>"   # 按需
+$env:HTTPS_PROXY = "http://127.0.0.1:<PORT>"
 
 & $node $pnpm install --dir "$env:DSH_HOME\profiles\desktop"
 ```
@@ -564,7 +564,7 @@ execFile(command, args, { encoding: "utf8", signal, windowsHide: true }, ...)
 但 **`explorer.exe` 是 GUI 启动器**，它继承 `SW_HIDE` ⇒
 **文件夹窗口被创建出来，但 `WS_VISIBLE=0`（不可见）**。
 
-**A/B 实测**（同一调用只改该参数，目标 `D:\LLM\DSH`）：
+**A/B 实测**（同一调用只改该参数，目标 `<DSH_ROOT>`）：
 
 | 参数 | 结果 |
 |---|---|
@@ -630,7 +630,7 @@ $m = [regex]::Match($seg, '"index\.js":\{"size":(\d+),"offset":"(\d+)"')
 ### 8.5 同时发现的另一独立缺陷：Electron 系应用无法启动
 
 **现象**：点「用 VS Code 打开」报「操作失败，请重试」。
-实测 `Code.exe "D:\LLM\DSH"` **退出码 1、进程数 0 —— 应用根本没启动**。
+实测 `Code.exe "<DSH_ROOT>"` **退出码 1、进程数 0 —— 应用根本没启动**。
 
 **根因**：桌面版自带 `<安装目录>\resources\runtime\bin\node.cmd` 里有
 
@@ -646,7 +646,7 @@ set ELECTRON_RUN_AS_NODE=1
 **进入 Node 模式**，把传来的路径当 JS 脚本加载：
 
 ```
-Error: Cannot find module 'D:\LLM\DSH'
+Error: Cannot find module '<DSH_ROOT>'
   code: 'MODULE_NOT_FOUND'      (Node.js v24.18.0)
 exit code: 1
 ```

@@ -8,9 +8,13 @@
 #>
 
 $ErrorActionPreference = 'Stop'
-$Stage   = 'D:\LLM\DSH\work\_dsh-archive'
+
+# 路径全部动态推断，不硬编码本机目录（否则泄露目录结构，且换机器即失效）
+#   $Stage   = 本脚本所在目录的上一级（即归档仓库根）
+#   $DsRoot  = 归档根的上两级（即 DSH 工作区根），可用环境变量 DSH_WORKSPACE 覆盖
+$Stage   = Split-Path -Parent $PSScriptRoot
 $Plugins = "$env:USERPROFILE\.dsh\local-plugins"
-$DsRoot  = 'D:\LLM\DSH'
+$DsRoot  = if ($env:DSH_WORKSPACE) { $env:DSH_WORKSPACE } else { Split-Path -Parent (Split-Path -Parent $Stage) }
 
 # ---------- 净化规则：正则 → 替换文本 ----------
 $Redactions = @(
@@ -20,9 +24,10 @@ $Redactions = @(
   @{ Pattern = 'ghp_[A-Za-z0-9]{20,}';                                 Repl = '<YOUR_GITHUB_TOKEN>' }
   @{ Pattern = 'AKIA[0-9A-Z]{16}';                                     Repl = '<YOUR_AWS_KEY>' }
   # 本机用户名 / 绝对路径脱敏
+  # 说明：一律用环境变量动态取值，绝不在源码里硬编码真实用户名
+  # （硬编码会让脱敏工具自身成为泄露源，且换机器即失效）
   @{ Pattern = [regex]::Escape($env:USERPROFILE);                      Repl = '<USERPROFILE>' }
   @{ Pattern = [regex]::Escape($env:USERNAME);                         Repl = '<USER>' }
-  @{ Pattern = 'Tian' + '_Tian';                                        Repl = '<USER>' }
   # 常见 iCloud / OneDrive 个人目录
   @{ Pattern = '[A-Za-z]:\\Users\\[^\\\s"'']+';                        Repl = '<USERPROFILE>' }
 )

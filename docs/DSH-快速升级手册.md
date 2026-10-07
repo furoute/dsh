@@ -293,7 +293,7 @@ alpha 把 `dsh-llm` 的 `CallId` 改名为 `ToolCallId`、设置面板 API 重�
 **✅ 正确格式（对象数组，需含 `contextWindow` / `maxTokens`）**：
 ```json
 {
-  "apiKey": "<YOUR_API_KEY>",
+  "apiKey": "<YOUR_DASHSCOPE_API_KEY>",
   "models": [
     { "id": "qwen3.8-max", "name": "Qwen3.8-Max", "contextWindow": 128000, "maxTokens": 8192 },
     { "id": "qwen3.7-max", "name": "Qwen3.7-Max", "contextWindow": 128000, "maxTokens": 8192 },
@@ -336,7 +336,7 @@ WebUI 模型选择器里能看到 Qwen 模型后，再用 C-2 末尾的命令实
 
 ## 本机网络备忘（Clash Verge，2026-09 记录）
 
-> 本机已装 **Clash Verge**，代理端口 **7897**，处于「系统代理」模式（`127.0.0.1:7897` 全局接管出网），开关后即可访问外网（GitHub、npm 官方源、Google 等）。
+> 本机已装 **Clash Verge**，处于「系统代理」模式（本地回环端口全局接管出网），开关后即可访问外网（GitHub、npm 官方源、Google 等）。
 
 ### 决策核心：**npm / 装包升级 = 永远优先「国内源 npmmirror」**
 - 国内源**速度快、稳定性好**，是默认首选：
@@ -346,16 +346,16 @@ pnpm install --registry=https://registry.npmmirror.com
 ```
 
 ### 什么时候才轮到 Clash 代理？
-只有两种「国内源办不到」时，才考虑 Clash（挂 `127.0.0.1:7897`）去兜底：
+只有两种「国内源办不到」时，才考虑 Clash（挂本地代理端口）去兜底：
 1. **国内源连不上某个「特定包」**（如个别包 npmmirror 同步不全/未收录）→ 临时切官方源 + 挂代理拉这一个包；
 2. **搜索信息 / 查外网资料**（GitHub release、外文网页、Google 等）。
 
 ```powershell
-$env:HTTP_PROXY  = 'http://127.0.0.1:7897'   # 需要走 Clash 时临时设上
-$env:HTTPS_PROXY = 'http://127.0.0.1:7897'
+$env:HTTP_PROXY  = 'http://127.0.0.1:<PORT>'   # 需要走 Clash 时临时设上
+$env:HTTPS_PROXY = 'http://127.0.0.1:<PORT>'
 ```
 
-> **一句话**：装包/升级 → npmmirror 国内源直连（不挂代理）；国内源拉不到的特定包 / 查外网资料 → 挂 7897 兜底。DSH 内置搜索访问 Google/GitHub 也不需要手动配置（系统代理已接管）。
+> **一句话**：装包/升级 → npmmirror 国内源直连（不挂代理）；国内源拉不到的特定包 / 查外网资料 → 挂本地代理兜底。DSH 内置搜索访问 Google/GitHub 也不需要手动配置（系统代理已接管）。
 
 ---
 

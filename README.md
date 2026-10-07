@@ -3,8 +3,12 @@
 > 个人基于 **DeepSeek Harness (DSH)** 桌面版开发/验证的一组扩展：客户端插件、会话工具、
 > 以及踩坑与调优沉淀的中文文档。
 >
-> 本仓库是**独立社区仓库**，非 DeepSeek 官方项目。内容按「自建资产」归档，
-> 所有私有凭据在归档管线中已被剔除（见 [安全与脱敏](#安全与脱敏)）。
+> ⚠️ **本仓库是个人扩展，非官方项目，与 DeepSeek 无任何隶属或背书关系。**
+> 内容按「自建资产」归档，所有私有凭据在归档管线中已被剔除（见 [安全与脱敏](#安全与脱敏)）。
+>
+> 插件 `package.json` 沿用了 `@deepseek-ai/*` 前缀，因为宿主注入协议按包名识别；
+> 这些包**均标记 `"private": true`，不会也不得发布到 npm 的 `@deepseek-ai` scope**
+> （该 scope 属于官方，发布即构成冒用）。
 
 ---
 
@@ -30,9 +34,12 @@ DSH 桌面版提供了一套插件（cordis 插件）机制，允许在 Host 与
 
 - 注入点：`dsh-client-ui-conversation`
 - 凭据来源：插件目录下 `config.json`（**仓库内为空模板**）
+- 安全：token 经**环境变量**传给子进程，**不走命令行参数**
+  （Windows 上命令行可被同机其它进程通过 WMI/CIM 读取）
 - 文件：[`plugins/dsh-billing/`](plugins/dsh-billing/)
 
 > ⚠️ 使用前请把 `config.json` 的 `token` 换成你自己的平台登录令牌，**不要提交到任何仓库**。
+> 该文件已被 `.gitignore` 排除。
 
 ### 2. `dsh-poetry` — 侧边栏诗泉
 侧边栏常驻的小面板，从 `poetry.palemoky.com` 在线接口随机拉取一首中国古典诗词展示。
@@ -137,7 +144,34 @@ pwsh -File scripts\audit-secrets.ps1   # 审计闸门，发现敏感信息即非
 | API Key / Token | 替换为 `<YOUR_...>` 占位符 |
 | 本机用户名 | 替换为 `<USER>` |
 | 用户目录绝对路径 | 替换为 `<USERPROFILE>` |
+| 本机工作目录 | 替换为 `<DSH_ROOT>` |
+| 本地代理端口 | 替换为 `<PORT>`，改为环境变量读取 |
 | 依赖目录 / 备份 / 日志 / 缓存 | 整体排除，不进入归档 |
+
+> 脱敏脚本**不硬编码任何真实用户名或路径**，一律运行时从
+> `$env:USERNAME` / `$env:USERPROFILE` 取值——避免"脱敏工具自身成为泄露源"。
+
+### 网络与外联
+
+为了让使用者知情，这里显式列出全部外部端点：
+
+| 插件 | 端点 | 用途 | 是否携带用户数据 |
+|---|---|---|---|
+| `dsh-billing` | `platform.deepseek.com` | 读取**你自己的**余额与会话消费 | 仅本人 token |
+| `dsh-poetry` | `poetry.palemoky.com` | 随机取一首古诗词 | 否（纯 GET） |
+
+除此之外**没有任何其它外联**。
+
+### 代理配置
+
+若你的网络环境需要代理，请**通过环境变量**设置，程序不会硬编码任何端口：
+
+```powershell
+$env:HTTPS_PROXY = "http://127.0.0.1:<你的端口>"
+$env:HTTP_PROXY  = "http://127.0.0.1:<你的端口>"
+```
+
+未设置则直连。`dsh-billing` 的 `config.json` 也支持 `proxy` 字段。
 
 ### 推送前校验
 

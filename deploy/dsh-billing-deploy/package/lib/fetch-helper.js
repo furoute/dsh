@@ -1,15 +1,23 @@
 // @deepseek-ai/dsh-billing — node fetch-helper.
-// Called by the host half as `node fetch-helper.js <out> <token> [proxy]`.
-// Fetches DeepSeek platform balance + TODAY's consumption through the local
-// proxy and writes the normalized JSON result to <out>.
+// Called by the host half as `node fetch-helper.js <out>`.
+// Fetches DeepSeek platform balance + TODAY's consumption and writes the
+// normalized JSON result to <out>.
+//
+// 安全：token 与代理经环境变量传入（DSH_BILLING_TOKEN / DSH_BILLING_PROXY），
+// 不经命令行参数——命令行在 Windows 上可被同机其它进程通过 WMI 读到。
 import { writeFileSync } from "node:fs";
 
-const token = process.argv[3] || "";
 const outPath = process.argv[2];
-const proxy = process.argv[4] || "http://127.0.0.1:7897";
+const token = process.env.DSH_BILLING_TOKEN || "";
+// 代理：优先插件传入的环境变量，其次系统代理变量，最后直连
+const proxy = process.env.DSH_BILLING_PROXY
+  || process.env.HTTPS_PROXY || process.env.https_proxy
+  || process.env.HTTP_PROXY || process.env.http_proxy || "";
 
-process.env.HTTP_PROXY = proxy;
-process.env.HTTPS_PROXY = proxy;
+if (proxy) {
+  process.env.HTTP_PROXY = proxy;
+  process.env.HTTPS_PROXY = proxy;
+}
 
 const SUMMARY = "https://platform.deepseek.com/api/v0/users/get_user_summary";
 const COST = "https://platform.deepseek.com/api/v0/usage/by_api_key/cost";

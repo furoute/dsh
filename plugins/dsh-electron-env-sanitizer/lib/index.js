@@ -10,8 +10,8 @@
 // 而 Electron 系应用的启动器（VS Code / Cursor / Windsurf / Zed …）看到该变量
 // 就**进入 Node 模式而不是 GUI 模式**，把传来的路径当成 JS 脚本加载：
 //
-//     $ "…\Code.exe" "D:\LLM\DSH"
-//     Error: Cannot find module 'D:\LLM\DSH'
+//     $ "…\Code.exe" "<DSH_ROOT>"
+//     Error: Cannot find module '<DSH_ROOT>'
 //       code: 'MODULE_NOT_FOUND'   (Node.js v24.18.0)
 //     exit code: 1
 //

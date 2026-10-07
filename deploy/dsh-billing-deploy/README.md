@@ -37,9 +37,9 @@
 
 ## 三个必须满足的前提（否则不显示）
 
-1. **目标机也要能访问 `platform.deepseek.com`**——本实现是通过 **Clash 本地代理 `127.0.0.1:7897`** 出网。
-   - 办公室 / 家里的电脑若是用 Clash Verge（默认端口 7897），即可直接工作；
-   - 若代理端口不同，或不是 Clash，需要改 `package/lib/index.js` 和 `package/lib/fetch-helper.js` 里的 `PROXY = "http://127.0.0.1:7897"`。
+1. **目标机也要能访问 `platform.deepseek.com`**——若需代理，请通过环境变量配置（见下）。
+   - 代理通过环境变量 `HTTPS_PROXY` / `HTTP_PROXY` 读取，**不硬编码端口**；
+   - 无需改代码：设置环境变量即可，例如 `$env:HTTPS_PROXY = "http://127.0.0.1:<端口>"`；未设置时直连。
 
 2. **DeepSeek 平台的登录 token**（不是 API Key）：从 `https://platform.deepseek.com/usage` → F12 → Network → 任一 `/api/` 请求 → 请求头 `Authorization: Bearer <token>` 复制。
    - token 是**跟你 DeepSeek 账号绑定**的，不绑定某台电脑；同一账号在家/办公室都可用你的 token；

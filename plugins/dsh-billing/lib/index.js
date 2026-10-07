@@ -14,8 +14,11 @@ const name = "dsh-billing";
 /** Cordis services this plugin needs to activate. */
 const inject = ["webServer", "timer", "subprocess"];
 
-// Local Clash proxy (127.0.0.1:7897) is required to reach platform.deepseek.com.
-const PROXY = "http://127.0.0.1:7897";
+// 代理：用于访问 platform.deepseek.com。
+// 不再硬编码本机端口——优先环境变量，其次 config.json 的 proxy 字段，最后直连。
+// 如需代理，请在 config.json 中设置，例如：{ "token": "...", "proxy": "http://127.0.0.1:7890" }
+const PROXY = process.env.HTTPS_PROXY || process.env.https_proxy
+  || process.env.HTTP_PROXY || process.env.http_proxy || "";
 const BALANCE_TTL = 60000; // refresh data at most once per minute
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -47,16 +50,23 @@ function queryOf(url) {
 }
 
 /**
- * Spawn node lib/fetch-helper.js <out> <token>. The helper writes its JSON
- * result to <out> and the host reads it back (avoids pipe-capture issues).
+ * Spawn node lib/fetch-helper.js <out>. The helper writes its JSON result to
+ * <out> and the host reads it back (avoids pipe-capture issues).
+ *
+ * 安全：token 与代理经**环境变量**传递，不走命令行参数。
+ * 理由：命令行参数在 Windows 上可被同机其它进程通过 WMI/CIM 读取
+ * （Get-CimInstance Win32_Process 的 CommandLine 字段），等于明文泄露 token。
  */
-async function runHelper(ctx, token) {
+async function runHelper(ctx, token, proxy) {
   const sub = ctx.get("subprocess");
   if (!sub) return { ok: false, reason: "no-subprocess" };
   const exe = await sub.resolveExecutable("node.exe");
+  const env = { ...process.env, DSH_BILLING_TOKEN: token };
+  if (proxy) env.DSH_BILLING_PROXY = proxy;
   const handle = sub.spawn({
-    argv: [exe, HELPER, OUT, token, PROXY],
+    argv: [exe, HELPER, OUT],
     cwd: __dirname,
+    env,
     stdio: { stdin: "ignore", stdout: "inherit", stderr: "inherit" },
     graceMs: 8000,
   });
@@ -82,7 +92,7 @@ async function ensureFresh(ctx) {
     if (!token) {
       data = { ok: false, reason: "no-token", message: "尚未配置 token" };
     } else {
-      data = await runHelper(ctx, token);
+      data = await runHelper(ctx, token, PROXY);
     }
     if (data && data.ok) {
       cached = data;
