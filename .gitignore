@@ -15,6 +15,10 @@ deploy/*/package/config.json
 .env
 .env.*
 
+# 本机密钥比对基准（verify-remote.mjs 读取，含真实密钥）
+.known-secrets.local
+*.local
+
 # 运行时数据
 *.log
 logs/

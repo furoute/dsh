@@ -24,10 +24,18 @@ $Blockers = [ordered]@{
 }
 
 $SkipDirs = @('node_modules','[\\/]\.git[\\/]','__pycache__')
+
+# 本机专用文件：被 .gitignore 排除，永不推送，故不参与审计
+# （.known-secrets.local 按设计就存放真实密钥，供 verify-remote.mjs 做比对基准）
+$SkipFiles = @('\.known-secrets\.local$','\.local$')
 $hits = @()
 
 $files = Get-ChildItem -Recurse -File -LiteralPath $Target |
-  Where-Object { $rel = $_.FullName; -not ($SkipDirs | Where-Object { $rel -match $_ }) }
+  Where-Object {
+    $rel = $_.FullName
+    -not ($SkipDirs  | Where-Object { $rel -match $_ }) -and
+    -not ($SkipFiles | Where-Object { $rel -match $_ })
+  }
 
 foreach ($f in $files) {
   $rel = $f.FullName.Substring($Target.Length).TrimStart('\')

@@ -108,15 +108,66 @@ async function gh(method, path, body) {
 }
 
 // ---------- 收集文件 ----------
+// 硬性排除（无论 .gitignore 怎么写）
 const SKIP = [
   /node_modules/, /[\\/]\.git[\\/]/, /__pycache__/,
   /\.bak(-|$)/, /\.log$/, /\.tmp$/,
 ];
+
+// 读取 .gitignore，把其中的模式转成正则，确保「被忽略的文件绝不推送」
+function loadGitignore() {
+  const rules = [];
+  let txt = '';
+  try { txt = readFileSync(join(ROOT, '.gitignore'), 'utf8'); } catch { return rules; }
+  for (let line of txt.split(/\r?\n/)) {
+    line = line.trim();
+    if (!line || line.startsWith('#')) continue;
+    const negate = line.startsWith('!');
+    if (negate) line = line.slice(1);
+    // 转义正则元字符，再还原 glob 通配
+    let re = line
+      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+      .replace(/\*\*/g, '\u0000')
+      .replace(/\*/g, '[^/]*')
+      .replace(/\u0000/g, '.*')
+      .replace(/\?/g, '[^/]');
+    // 目录形式（以 / 结尾）只匹配目录本身
+    const dirOnly = re.endsWith('/');
+    if (dirOnly) re = re.slice(0, -1);
+    // 有斜杠 = 锚定根；无斜杠 = 匹配任意层级
+    const anchored = line.includes('/');
+    const pattern = anchored
+      ? `^${re}($|/)`
+      : `(^|/)${re}($|/)`;
+    rules.push({ re: new RegExp(pattern), negate, dirOnly });
+  }
+  return rules;
+}
+
+const IGNORE = loadGitignore();
+
+function isIgnored(rel) {
+  let ignored = false;
+  for (const r of IGNORE) {
+    if (r.re.test(rel)) ignored = !r.negate;
+  }
+  return ignored;
+}
+
+// 兜底安全网：推送前再次扫描真实密钥（读本机基准文件，若无则跳过）
+const KNOWN_FILE = join(ROOT, '.known-secrets.local');
+let KNOWN_SECRETS = [];
+try {
+  KNOWN_SECRETS = readFileSync(KNOWN_FILE, 'utf8').split(/\r?\n/)
+    .map(s => s.trim()).filter(s => s && !s.startsWith('#'));
+} catch { /* 无基准文件则仅靠 .gitignore + SKIP */ }
+
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {
     const full = join(dir, name);
     const rel = relative(ROOT, full).split(sep).join('/');
     if (SKIP.some(re => re.test(full))) continue;
+    if (isIgnored(rel)) continue;          // 严格遵守 .gitignore
     const st = statSync(full);
     if (st.isDirectory()) walk(full, out);
     else out.push({ rel, full, size: st.size });
@@ -125,8 +176,25 @@ function walk(dir, out = []) {
 }
 
 const files = walk(ROOT);
+
+// 兜底：逐文件确认不含已知真实密钥，命中即中止
+if (KNOWN_SECRETS.length) {
+  const leaked = [];
+  for (const f of files) {
+    let t;
+    try { t = readFileSync(f.full, 'utf8'); } catch { continue; }
+    for (const s of KNOWN_SECRETS) if (t.includes(s)) leaked.push(f.rel);
+  }
+  if (leaked.length) {
+    console.error('\n❌ 中止：以下文件含真实密钥，已阻止推送：');
+    leaked.forEach(x => console.error('   ' + x));
+    process.exit(1);
+  }
+  console.log(`\n✓ 密钥兜底检查通过（比对 ${KNOWN_SECRETS.length} 条基准，均未出现在待推送文件中）`);
+}
+
 console.log(`\n=== 归档目录: ${ROOT}`);
-console.log(`=== 文件数: ${files.length}\n`);
+console.log(`=== 文件数: ${files.length}（已遵守 .gitignore）\n`);
 for (const f of files) {
   console.log(`  ${f.rel.padEnd(62)} ${String(f.size).padStart(7)} B`);
 }
