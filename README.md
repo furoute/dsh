@@ -184,10 +184,24 @@ $env:HTTP_PROXY  = "http://127.0.0.1:<你的端口>"
 
 **当前状态**：仓库内所有凭据均为占位符，**不含任何真实密钥**。
 
+### 扫描闸门（三道，实现互相独立）
+
+| 闸门 | 实现者 | 何时运行 |
+|---|---|---|
+| `scripts/audit-secrets.ps1` | 本仓库作者 | 推送前手动 |
+| [`.gitleaks.toml`](.gitleaks.toml) + [GitHub Actions](.github/workflows/secret-scan.yml) | **第三方** gitleaks | **每次 push 自动** |
+| 外部独立复核 | 其它 AI 智能体 | 阶段性人工发起 |
+
+> **为什么强调"实现独立"**：本仓库实测过一个教训——作者自己写的扫描器，
+> 扫不出作者自己制造的盲区。详见 [SECURITY.md](SECURITY.md#最重要的一条教训)。
+> **扫描器的数量不解决问题，实现思路不同才解决。**
+
 ### 使用提示
 
 - `plugins/dsh-billing/config.json` 需要你自己填 token，且**务必加入 `.gitignore`**（已预置）
-- 文档中出现的 `<USER>` / `<USERPROFILE>` 是脱敏占位符，按你的实际路径替换
+- 文档中出现的 `<USER>` / `<USERPROFILE>` / `<DSH_ROOT>` / `<PORT>` 是脱敏占位符，
+  按你的实际环境替换
+- 网络需代理时，用环境变量设置（`HTTPS_PROXY` 等），代码中不硬编码任何端口
 
 ---
 

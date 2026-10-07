@@ -16,7 +16,9 @@ const inject = ["webServer", "timer", "subprocess"];
 
 // 代理：用于访问 platform.deepseek.com。
 // 不再硬编码本机端口——优先环境变量，其次 config.json 的 proxy 字段，最后直连。
-// 如需代理，请在 config.json 中设置，例如：{ "token": "...", "proxy": "http://127.0.0.1:7890" }
+// 如需代理，请在 config.json 中设置，例如：
+//   { "token": "<你在本地填写，切勿提交>", "proxy": "http://127.0.0.1:<PORT>" }
+// 注意：token 只存本机 config.json（已被 .gitignore 排除），勿写入源码、勿走命令行。
 const PROXY = process.env.HTTPS_PROXY || process.env.https_proxy
   || process.env.HTTP_PROXY || process.env.http_proxy || "";
 const BALANCE_TTL = 60000; // refresh data at most once per minute

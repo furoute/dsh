@@ -135,10 +135,27 @@ async function gh(method, path, body) {
     headers['Content-Length'] = Buffer.byteLength(payload);
   }
 
-  const res = await requestViaProxy(method, url, headers, payload);
-  let json = null;
-  try { json = res.text ? JSON.parse(res.text) : null; } catch { json = { raw: res.text }; }
-  return { status: res.status, ok: res.ok, json };
+  // 网络抖动重试：仅对连接类错误重试（ECONNRESET / ETIMEDOUT / 代理 CONNECT 失败）。
+  // 幂等性说明：GitHub 的 blob / tree / commit 创建都是"内容寻址或不可变对象"，
+  // 重试不会产生重复提交；只有 ref 更新是写操作，但它本身也是幂等的（同 sha）。
+  const MAX_RETRY = 4;
+  let lastErr = null;
+  for (let attempt = 1; attempt <= MAX_RETRY; attempt++) {
+    try {
+      const res = await requestViaProxy(method, url, headers, payload);
+      let json = null;
+      try { json = res.text ? JSON.parse(res.text) : null; } catch { json = { raw: res.text }; }
+      return { status: res.status, ok: res.ok, json };
+    } catch (e) {
+      lastErr = e;
+      const transient = /ECONNRESET|ETIMEDOUT|ECONNREFUSED|EPIPE|CONNECT|socket hang up/i.test(String(e.message));
+      if (!transient || attempt === MAX_RETRY) throw e;
+      const wait = 1000 * attempt;
+      console.warn(`\n  [重试 ${attempt}/${MAX_RETRY - 1}] ${method} ${path} — ${e.message}（等待 ${wait}ms）`);
+      await new Promise(r => setTimeout(r, wait));
+    }
+  }
+  throw lastErr;
 }
 
 // ---------- 收集文件 ----------

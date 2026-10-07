@@ -1,0 +1,46 @@
+# gitleaks 配置 —— 本仓库的独立第三方扫描规则
+#
+# 定位：与 scripts/audit-secrets.ps1 **互为补充**，不是替代。
+#   本仓库脚本：针对中文写作场景 + 本机环境特征（用户名/家目录/代理端口）
+#   gitleaks  ：通用凭据形态，规则集与作者无关，可覆盖作者的盲区
+#
+# 本地运行（需先安装 gitleaks）：
+#   gitleaks detect --config .gitleaks.toml --source . --redact -v
+#   gitleaks detect --config .gitleaks.toml --source . --log-opts="--all"   # 含全历史
+
+title = "DSH Extensions secret scan"
+
+[extend]
+# 保留 gitleaks 内置规则集（这是"独立实现"的价值所在，不要关掉）
+useDefault = true
+
+[[rules]]
+id = "chinese-doc-placeholder-leak"
+description = "文档中疑似复述了真实凭据（而非占位符）"
+regex = '''(?i)(api[_-]?key|secret|token|password)\s*[:=]\s*["'][A-Za-z0-9+/]{20,}["']'''
+tags = ["key", "credential"]
+
+[[rules]]
+id = "hardcoded-localhost-proxy"
+description = "硬编码的本地代理端口（可移植性问题，且暴露本机环境）"
+# 仅提示、不阻断：排除文档中说明 DSH web 默认端口 3080 的正当用法
+regex = '''127\.0\.0\.1:(?!3080\b)\d{4,5}'''
+tags = ["portability"]
+
+[allowlist]
+description = "已知的安全写法"
+# 占位符与示例是正常的
+regexes = [
+  '''<YOUR_[A-Z_]+>''',
+  '''<USER>''',
+  '''<USERPROFILE>''',
+  '''<DSH_ROOT>''',
+  '''<PORT>''',
+  # 扫描规则自身的模式定义（scripts/ 里必然出现 sk- 等字样）
+  '''sk-\[A-Za-z0-9\]''',
+  '''gh\[opsu\]_''',
+]
+paths = [
+  # 本机专用文件（被 .gitignore 排除，本就不会推送）
+  '''\.known-secrets\.local$''',
+]

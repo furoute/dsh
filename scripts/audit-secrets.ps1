@@ -28,6 +28,23 @@ if ($env:USERNAME) {
 }
 $Blockers['其它用户目录绝对路径'] = '[A-Za-z]:\\Users\\(?!<USER>)[A-Za-z0-9_.\-]+'
 
+# ---------- 规范化检测规则（用于补"拼接绕过"盲区）----------
+# 这些规则跑在"已去掉引号/加号/空白"的文本上，因此 'abc' + 'def' 会命中 abcdef。
+$NormBlockers = [ordered]@{}
+if ($env:USERNAME) {
+  # 用户名整体命中
+  $NormBlockers['本机用户名(规范化)'] = [regex]::Escape($env:USERNAME)
+
+  # 按片段命中：把用户名拆成前半 / 后半分别扫，
+  # 即使有人只写了一半、或中间插了注释/换行，也能抓到。
+  $u = $env:USERNAME
+  if ($u.Length -ge 6) {
+    $half = [Math]::Floor($u.Length / 2)
+    $NormBlockers['用户名前半段'] = [regex]::Escape($u.Substring(0, $half))
+    $NormBlockers['用户名后半段'] = [regex]::Escape($u.Substring($half))
+  }
+}
+
 $SkipDirs = @('node_modules','[\\/]\.git[\\/]','__pycache__')
 
 # 本机专用文件：被 .gitignore 排除，永不推送，故不参与审计
@@ -59,6 +76,30 @@ foreach ($f in $files) {
           片段 = $hit.Value.Substring(0, [Math]::Min(40, $hit.Value.Length))
         }
       }
+    }
+  }
+
+  # ---------- 规范化检测（补"字符串拼接"盲区）----------
+  # 原理：把引号、+、注释符、空白去掉后再匹配，`'abc' + 'def'` 会被"粘"回 `abcdef`。
+  # 背景：曾把真实用户名拆成 'XXX' + '_XXX' 绕过本脚本，导致扫描器扫不出自己。
+  $norm = $text -replace "['""` +]", '' -replace '(?m)^\s*(//|#).*$', ''
+  foreach ($name in $NormBlockers.Keys) {
+    $m = [regex]::Matches($norm, $NormBlockers[$name])
+    if ($m.Count -gt 0) {
+      $hits += [pscustomobject]@{
+        规则 = "$name（规范化后命中）"; 文件 = $rel; 行 = '-'
+        片段 = $m[0].Value.Substring(0, [Math]::Min(40, $m[0].Value.Length))
+      }
+    }
+  }
+
+  # ---------- 编码类检测（base64 / 长 hex）----------
+  foreach ($m in [regex]::Matches($text, '(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{40,}={0,2}(?![A-Za-z0-9+/])')) {
+    # 只报"看起来像编码过的凭据"，跳过常见的纯文本长串（如哈希、URL）
+    $line = ($text.Substring(0, $m.Index) -split "`n").Count
+    $hits += [pscustomobject]@{
+      规则 = '长 base64 串（请人工确认是否编码凭据）'; 文件 = $rel; 行 = $line
+      片段 = $m.Value.Substring(0, [Math]::Min(40, $m.Value.Length))
     }
   }
 }
