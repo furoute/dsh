@@ -113,7 +113,7 @@ foreach ($p in 'dsh-poetry','dsh-billing','dsh-qwen') {
 ### 4.4 兼容自检（沿用 rc.7 的脚本即可，检查项跨版本有效）
 
 ```powershell
-node D:\LLM\DSH\upgrade\0.1.0-rc.7\verify-plugins-rc7.mjs --dshroot <DSH根目录>
+node <DSH_ROOT>\upgrade\0.1.0-rc.7\verify-plugins-rc7.mjs --dshroot <DSH根目录>
 ```
 
 ### 4.5 启动 + 冒烟
