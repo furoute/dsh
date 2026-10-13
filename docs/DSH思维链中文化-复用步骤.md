@@ -25,7 +25,7 @@ DSH 用“agent preset（预设）”组织 persona。`settings.yaml` 里指定�
 - 配置文件：`~\.dsh\settings.yaml`
 - 关键字段：`agent-presets.default`（本机为 `standard-codex`）
 
-关键路径（把 `Administrator` 换成你自己的用户名）：
+关键路径（把 `<USER>` 换成你自己的用户名）：
 
 ```
 <USERPROFILE>\.dsh\settings.yaml
@@ -105,7 +105,7 @@ cp ~/.dsh/.agent-presets/<预设名>/agent.cordis.yml \
 
 ## 六、本次已完成的备份记录
 
-本机（`Administrator`）本次改动已备份：
+本机（`<USER>`）本次改动已备份：
 
 - 改动文件：`<USERPROFILE>\.dsh\.agent-presets\standard-codex\agent.cordis.yml`
 - 备份文件：`<USERPROFILE>\.dsh\.agent-presets\standard-codex\agent.cordis.yml.bak-zh-thinking-20260828-133032`

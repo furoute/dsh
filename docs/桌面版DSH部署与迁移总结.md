@@ -1,7 +1,7 @@
 # 桌面版 DSH 部署与迁移总结（可跨宿主机复用）
 
 > **用途**：在其它终端/宿主机上部署「桌面版 DSH」并从 npm 版迁移插件时，按本文件操作可少踩坑。
-> **成文日期**：2026-09-28（初稿 2026-09-27，2026-09-28 补入「打开文件夹」修复与反思）
+> **成文日期**：2026-09-28（初稿 2026-09-27，2026-09-28 补入「打开文件夹」修复与反思；2026-10-13 补入 8.8 官方修复复核）
 > **验证环境**：Windows 11 (10.0.26200) / DSH 桌面版内核 `0.1.7-rc.2` / npm 版 `0.1.6-alpha.2`
 
 ---
@@ -707,6 +707,43 @@ subprocess-local: Windows Job runner exited with exit code 0
 4. 打补丁**务必等长**，并备份原始字节 + 偏移 + sha256
 5. **app 升级会覆盖 `app.asar`** ⇒ 升级后需重新检查该补丁是否还在
 
+### 8.8 后续：官方已在桌面版 `0.2.0-rc.2` 实现等价修复（2026-10-13 复核）
+
+> **结论**：升级到 `0.2.0-rc.2` 之后**无需重打补丁**。8.3 的补丁脚本改为
+> 「版本回退、或该功能再回归时」的兜底手段。
+
+**复核方式**（只读，未改动任何文件）：按 8.4 的实时解析法读出 `app.asar` 头部，
+定位 `dsh/node_modules/@deepseek-ai/dsh-native-command/lib/index.js`，取出正文比对。
+
+| 项 | 9-28 打补丁时 | 2026-10-13 复核 |
+|---|---|---|
+| 本仓库式补丁 `shouldHide(...)` | 有（补丁 A） | **无** —— `app.asar` 已被整体替换 |
+| `app.asar` 大小 | 117445671 | 121348951 |
+| 内嵌版本串 | — | `0.2.0-rc.2`（`@deepseek-ai/dsh-desktop-runtime`） |
+| 可见性实现 | 本仓库补丁（一行级） | **官方参数化** |
+
+**官方实现**（思路与 8.3 的补丁一致，故上文的根因结论仍成立）：
+
+```javascript
+const runNativeCommand = (command, args, signal, window) => new Promise((resolve, reject) => {
+  execFile(command, [...args], { encoding: "utf8", signal, windowsHide: window === "hidden" }, ...);
+});
+```
+
+调用点显式声明 GUI 可见：
+
+```javascript
+await run("explorer.exe", args, signal, "visible");
+```
+
+注释原文大意：**`hidden` 给后台命令，`visible` 给 GUI 启动器**（其它平台忽略该参数）。
+
+**对 8.7 复用清单的修正**：
+
+- 第 5 条依然成立（app 升级会覆盖 `app.asar`），但升级**同时**是该缺陷的正解 ——
+  先确认版本是否已含官方修复，再决定要不要重打补丁；
+- 只有在**较旧版本**上遇到该现象时，才走 8.2 的 A/B 确证 + 8.3 的等长补丁。
+
 ---
 
 ## 变更记录
@@ -715,6 +752,7 @@ subprocess-local: Windows Job runner exited with exit code 0
 |---|---|
 | 2026-09-27 | 初稿。基于 npm 版 0.1.6-alpha.2 → 桌面版 0.1.7-rc.2 的实际迁移经验。 |
 | 2026-09-28 | 补入**第八节**：「用文件资源管理器打开」按钮打不开文件夹的完整修复实录（真根因 = `runNativeCommand` 的 `windowsHide: true`）、同批发现的 `ELECTRON_RUN_AS_NODE` 缺陷与其**危险修法**、以及 DSH 连错三处的诊断反思。标题日期同步更新为 20260928。 |
+| 2026-10-13 | 补入 **8.8**：复核确认官方已在桌面版 `0.2.0-rc.2` 实现等价修复（`windowsHide: window === "hidden"`，explorer 调用显式传 `visible`）；9-28 的等长补丁随升级被覆盖，**无需重打**。8.7 复用清单据此修正。 |
 
 ---
 
