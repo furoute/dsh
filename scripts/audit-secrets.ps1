@@ -26,7 +26,8 @@ $Blockers = [ordered]@{
 if ($env:USERNAME) {
   $Blockers['本机用户名残留'] = [regex]::Escape($env:USERNAME)
 }
-$Blockers['其它用户目录绝对路径'] = '[A-Za-z]:\\Users\\(?!<USER>)[A-Za-z0-9_.\-]+'
+# 正反斜杠都算：用正斜杠写用户目录的文本同样会漏出用户名（闸门自身也不能写出该字面量）
+$Blockers['其它用户目录绝对路径'] = '[A-Za-z]:[\\/]Users[\\/](?!<USER>)[A-Za-z0-9_.\-]+'
 
 # ---------- 规范化检测规则（用于补"拼接绕过"盲区）----------
 # 这些规则跑在"已去掉引号/加号/空白"的文本上，因此 'abc' + 'def' 会命中 abcdef。

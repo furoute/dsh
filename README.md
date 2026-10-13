@@ -137,6 +137,10 @@ pwsh -File scripts\sanitize-copy.ps1   # 白名单复制 + 自动脱敏
 pwsh -File scripts\audit-secrets.ps1   # 审计闸门，发现敏感信息即非零退出
 ```
 
+> 两台电脑的工作区根不同时，用 `DSH_WORKSPACE` 把它们都列上（分号或逗号分隔），
+> 一次运行即同时脱敏两种写法：
+> `$env:DSH_WORKSPACE = "<根1>;<根2>"; pwsh -File scripts\sanitize-copy.ps1`
+
 > 最初本仓库是用 GitHub REST API 推送的（开发机未装 git）。现已改用
 > **标准 git 流程**维护，CI 闸门随每次 push 自动运行。
 
