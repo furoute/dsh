@@ -32,7 +32,32 @@
 2. **真错误在崩溃日志里** —— `%APPDATA%\@deepseek-ai\dsh-desktop\logs\crash-*.log`，搜 `invalid config`。
 3. **升级要连带升级 CLI** —— 桌面版新、全局 `dsh` 和 profile 依赖旧，会隐性错配。
 
-📄 完整排障记录（含 6 个查错弯路清单）：**[docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md](docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md)**
+### 同一个版本还有第二个坑：CLI 报 `MISSING_CREDENTIAL`
+
+**桌面版好了，但用 SSH 唤醒 CLI（headless）仍然不通。** 原因不是 key 丢了，而是新版 `dsh-headless` bundle 把凭据服务禁用了：
+
+```yaml
+# dsh --profile headless --dump-config 里能看到
+- id: credentials
+  name: '@deepseek-ai/dsh-credentials-local'
+  disabled: true
+```
+
+**修法** —— 追加到 `~/.dsh/profiles/headless/cordis.patch.yml`：
+
+```yaml
+- id: credentials
+  disabled: false
+```
+
+```powershell
+dsh --profile headless "只回复两个字：正常"   # 期望：正常（实测 5.7 秒）
+```
+
+> 顺带把 `mode` 也从环境变量搬进了三个 profile 的补丁层（`- id: tools` / `mode: native`），
+> 然后删掉用户级 `DSH_TOOLS_MODE` —— 以后某个 profile 想切 `ptc` 不会连累其他两个。
+
+📄 完整排障记录（含 6 个查错弯路清单 + CLI 凭证坑 + 环境变量治理）：**[docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md](docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md)**
 
 ---
 

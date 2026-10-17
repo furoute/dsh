@@ -178,10 +178,106 @@ ssh <user>@<host> "dsh -V"                                         # 能返回�
 
 ---
 
-## 七、遗留事项
+## 七、连带故障：CLI（headless）报 MISSING_CREDENTIAL
 
+桌面版修好之后，**用 SSH 唤醒 CLI 的自动通道仍然不通** —— 这是同一轮升级暴露的第二个坑，与 `mode` 无关。
+
+### 现象
+
+```powershell
+dsh --profile headless "只回复两个字：正常"
+```
+
+```
+dsh: MISSING_CREDENTIAL: llm-deepseek: no API key for provider route "deepseek-official";
+store DEEPSEEK_API_KEY through the credentials service (the web Models page writes it),
+or export DEEPSEEK_API_KEY in the launching environment
+```
+
+**注意：桌面版 GUI 一切正常，只有 CLI 挂。** 这就排除了「key 丢了/过期」的可能。
+
+### 根因
+
+`~/.dsh/.credentials.yaml` 里的 `DEEPSEEK_API_KEY` **还在**（`refs` 段存在，只是显示为 `sk-1f2...cf27` 的脱敏占位）。
+真正的原因是：**新版 `@deepseek-ai/dsh-headless` bundle 的补丁层把凭据服务显式禁用了。**
+
+`dsh --profile headless --dump-config` 里能看到：
+
+```yaml
+- id: credentials
+  name: '@deepseek-ai/dsh-credentials-local'
+  disabled: true          # ← headless bundle 干的
+```
+
+而 `desktop` / `web` 档都没禁用，所以 GUI 一直正常。
+`llm-deepseek` 依赖凭据服务取 key → 服务没加载 → 直接抛 `MISSING_CREDENTIAL`。
+
+### 修法：在用户补丁层覆盖回启用
+
+补丁层优先级高于 bundle 层，追加到 `~/.dsh/profiles/headless/cordis.patch.yml` 末尾：
+
+```yaml
+# 让 CLI(headless) 复用桌面版已保存的 API 凭据
+# 根因：dsh-headless bundle 把 credentials 设为 disabled: true
+- id: credentials
+  disabled: false
+```
+
+验证：
+
+```powershell
+dsh --profile headless --dump-config | Select-String -Pattern 'id: credentials' -Context 0,2
+# 期望：disabled: false
+
+dsh --profile headless "只回复两个字：正常"
+# 期望：正常
+```
+
+实测：**5.7 秒返回，无需设任何环境变量。**
+
+> ⚠️ 另一条官方给出的备用路（导出 `DEEPSEEK_API_KEY` 环境变量）也有效，但**只在当前进程有效**：
+> 必须与 `dsh` 在**同一进程内**设置，`set X=Y && dsh ...` 这种链式传递实测会导致 headless 静默不干活。
+> 且 DSH 宿主 spawn 子进程时会清洗匹配 `KEY|PASSWORD|SECRET|TOKEN` 的环境变量，在「DSH 内部再起 dsh」场景下不可见 —— 所以**改 profile 更稳**。
+
+---
+
+## 八、彻底治理：把 `DSH_TOOLS_MODE` 从环境变量搬进 profile
+
+`mode` 从环境变量读（`mode: !!js process.env.DSH_TOOLS_MODE`）有个隐患：
+**用户级环境变量是全局的，会同时注入 desktop / web / headless 三个 profile**，
+将来某个 profile 想用 `ptc` 就得连累其他两个。
+
+**改法：三个 profile 各自的 `cordis.patch.yml` 末尾显式写死，然后删掉环境变量。**
+
+```yaml
+- id: tools
+  config:
+    mode: native          # 想用 PTC 就改 ptc，互不影响
+```
+
+```powershell
+[Environment]::SetEnvironmentVariable('DSH_TOOLS_MODE', $null, 'User')
+```
+
+验证（实测通过）：
+
+| 验证项 | 结果 |
+|---|---|
+| `DSH_TOOLS_MODE` User / Machine | 均已删除 |
+| `dsh --profile headless --dump-config` | 解析出 `mode: native`，无报错 |
+| `dsh --profile web --dump-config` | 解析出 `mode: native` |
+| 删环境变量后跑 headless | 返回「正常」，5.7 秒 |
+| 桌面版重启 | 5 个进程正常，崩溃日志无新增 |
+
+---
+
+## 九、遗留事项
+
+- **headless 的 `credentials: disabled: false` 是本地私改**：官方若改插件名或补丁语义，会复发 `MISSING_CREDENTIAL`，升级后**必须复验这一项**。
 - **千问（dsh-qwen）**：2026-10-01 已退役。0.2.0-rc.1 起 LLM provider 改由**设置界面**驱动
   （设置 → 模型 → 自定义模型 API），插件目录里的 `dsh-qwen` 是残留，不再加载，留着无害。
+- **npm dist-tag 陷阱**：`latest` 仍指向 0.2.0-rc.2，`next` 才是 0.2.1-rc.2。
+  执行 `npm i -g @deepseek-ai/dsh` 会**回退**版本 —— 必须显式写 `@0.2.1-rc.2`。
 - **`profiles/node_modules-list-backup-20261017.txt`**：清 junction 前留的 41KB 纯文本清单，
   无引用，确认无事后可删。
 - **桌面版升级必须连带升级 CLI 与 profile 依赖**，否则会出现「应用是新版、依赖是旧版」的隐性错配。
