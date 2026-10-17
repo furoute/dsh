@@ -12,6 +12,30 @@
 
 ---
 
+## 🔴 最近更新（2026-10-17）：升级 0.2.1-rc.2 后启动失败？
+
+**如果 DSH 桌面版升级到 `0.2.1-rc.2` 后打不开，弹出「插件全部加载失败」，先查这一条 —— 5 秒就能定位：**
+
+```powershell
+[Environment]::GetEnvironmentVariable('DSH_TOOLS_MODE','User')
+```
+
+**如果返回 `both`，就是它。** 新版 `dsh-tools` 只认 `native` / `ptc`，`both` 是老版本的值：
+
+```powershell
+[Environment]::SetEnvironmentVariable('DSH_TOOLS_MODE','native','User')
+# 然后完全退出 DSH（进程全退）再启动
+```
+
+**要点三条：**
+1. **报错框误导人** —— 它让你「禁用第三方插件」，但真凶是核心 `tools` 插件，第三方插件只是被牵连。
+2. **真错误在崩溃日志里** —— `%APPDATA%\@deepseek-ai\dsh-desktop\logs\crash-*.log`，搜 `invalid config`。
+3. **升级要连带升级 CLI** —— 桌面版新、全局 `dsh` 和 profile 依赖旧，会隐性错配。
+
+📄 完整排障记录（含 6 个查错弯路清单）：**[docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md](docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md)**
+
+---
+
 ## 这是什么
 
 DSH 桌面版提供了一套插件（cordis 插件）机制，允许在 Host 与 Web 两个半侧注入自定义能力。
