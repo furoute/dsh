@@ -95,6 +95,7 @@ DSH 桌面版提供了一套插件（cordis 插件）机制，允许在 Host 与
 | [DSH-Windows沙箱调研](docs/DSH-Windows沙箱调研.md) | Windows 沙箱机制调研 |
 | [桌面版DSH部署与迁移总结](docs/桌面版DSH部署与迁移总结.md) | 部署与迁移完整记录 |
 | [DSH-快速升级手册](docs/DSH-快速升级手册.md) | 版本升级流程 |
+| [DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障](docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md) | 升级后启动失败的真因：环境变量 `DSH_TOOLS_MODE=both`（含弯路清单）|
 | [Agent产物归类方法](docs/Agent产物归类方法.md) | Agent 产物组织思路 |
 | [dsh-security-architecture.svg](docs/dsh-security-architecture.svg) | 安全架构图 |
 
