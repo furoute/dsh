@@ -1,23 +1,171 @@
 # DSH Extensions
 
-> 个人基于 **DeepSeek Harness (DSH)** 桌面版开发/验证的一组扩展：客户端插件、会话工具、
-> 以及踩坑与调优沉淀的中文文档。
->
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![secret-scan](https://github.com/furoute/dsh/actions/workflows/secret-scan.yml/badge.svg)](https://github.com/furoute/dsh/actions/workflows/secret-scan.yml)
+[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2-4a9eff)](https://github.com/deepseek-ai)
+
+> 基于 **DeepSeek Harness (DSH)** 桌面版的个人扩展集合：客户端插件、会话工具，
+> 以及踩坑与调优沉淀的中文实践文档。
+
 > ⚠️ **本仓库是个人扩展，非官方项目，与 DeepSeek 无任何隶属或背书关系。**
-> 内容按「自建资产」归档，所有私有凭据在归档管线中已被剔除（见 [安全与脱敏](#安全与脱敏)）。
->
-> 插件 `package.json` 沿用了 `@deepseek-ai/*` 前缀，因为宿主注入协议按包名识别；
+> 所有私有凭据在归档管线中已被剔除（见 [安全与脱敏](#安全与脱敏)）。
+> 插件 `package.json` 沿用 `@deepseek-ai/*` 前缀，仅因宿主注入协议按包名识别；
 > 这些包**均标记 `"private": true`，不会也不得发布到 npm 的 `@deepseek-ai` scope**
 > （该 scope 属于官方，发布即构成冒用）。
+
+## 目录
+
+- [特性](#特性)
+- [插件一览](#插件一览)
+- [快速开始](#快速开始)
+- [实践 Issues（已修复）](#实践-issues我们踩过并已修复的)
+- [工具一览](#工具一览)
+- [文档一览](#文档一览)
+- [兼容性](#兼容性)
+- [安全与脱敏](#安全与脱敏)
+- [贡献](#贡献)
+- [许可](#许可)
 
 ---
 
 ## 🔴 最近更新（2026-10-18）
 
-- 新增插件 [`dsh-work-mode`](plugins/dsh-work-mode/)：办公 / 代码模式**即时切换**（不重启会话），
-  对应 DSH 引导向导里的 `purpose` 字段。
-- 我们踩过并已修复的问题已归置为 **[实践 Issues](#实践-issues我们踩过并已修复的)** 章节：
-  升级 `0.2.1-rc.2` 启动失败、CLI `MISSING_CREDENTIAL`、「用文件资源管理器打开」打不开，共 3 条。
+- 新增插件 [`dsh-work-mode`](plugins/dsh-work-mode/)：办公 / 代码模式**即时切换**（不重启会话）。
+- 新增「实践 Issues」章节，归置 3 条已修复问题（升级启动失败、CLI 凭证、资源管理器打开）。
+
+---
+
+## 特性
+
+- **即插即用** —— 复制到 `$DSH_HOME/local-plugins/`，重启 DSH 桌面版即可使用，无需 `npm install`。
+- **纯本地运行** —— 插件在宿主 / 浏览器两端注入，无独立服务；全部外联端点见 [网络与外联](#网络与外联)。
+- **中文实践文档** —— 每条经验都附排障过程与验证方法，不转述官方公告。
+- **三道密钥闸门** —— 自研审计脚本 + gitleaks CI + 外部独立复核，实现互相独立。
+- **持续跟进升级** —— 随 DSH 桌面版迭代同步验证（当前基线 `0.2.1-rc.2`）。
+
+---
+
+## 插件一览
+
+### 1. `dsh-billing` — 余额与消费显示
+
+在聊天输入框下方常驻显示 **DeepSeek 平台充值余额**与**当前会话消费金额**。
+通过宿主半侧 spawn 一个 Node 小助手进程请求平台接口，避免在渲染进程直接暴露凭据。
+
+- 注入点：`dsh-client-ui-conversation`
+- 凭据来源：插件目录下 `config.json`（**仓库内为空模板**）
+- 安全：token 经**环境变量**传给子进程，**不走命令行参数**
+  （Windows 上命令行可被同机其它进程通过 WMI/CIM 读取）
+- 文件：[`plugins/dsh-billing/`](plugins/dsh-billing/)
+
+> ⚠️ 使用前请把 `config.json` 的 `token` 换成你自己的平台登录令牌，**不要提交到任何仓库**。
+> 该文件已被 `.gitignore` 排除。
+
+### 2. `dsh-poetry` — 侧边栏诗泉
+
+侧边栏常驻的小面板，从 `poetry.palemoky.com` 在线接口随机拉取一首中国古典诗词展示。
+
+- 注入点：`dsh-client-ui-sidebar`
+- 无需凭据
+- 文件：[`plugins/dsh-poetry/`](plugins/dsh-poetry/)
+
+### 3. `dsh-find` — 会话内查找
+
+在会话里提供 **Ctrl+F 查找条**：高亮 + 上一处/下一处跳转。
+基于 DOM 文本级匹配，**对中文分词友好**（不依赖浏览器原生 find）。
+
+- 注入点：`dsh-client-runtime`（纯客户端）
+- 无需凭据
+- 文件：[`plugins/dsh-find/`](plugins/dsh-find/)
+
+### 4. `dsh-electron-env-sanitizer` — Electron 环境变量净化
+
+**修复 DSH 桌面版一个真实缺陷**：宿主进程残留 `ELECTRON_RUN_AS_NODE=1`，
+被 spawn 的子进程继承后，导致 VS Code / Cursor 等 Electron 系应用**以 Node 模式启动**，
+表现为「用 VS Code 打开」报「操作失败，请重试」。
+
+插件在宿主启动时从 `process.env` 删除该变量，恢复子进程正常 GUI 启动。
+
+> 完整根因分析（含 `scrubbedParentEnv()` 为何漏掉此变量）见
+> [`plugins/dsh-electron-env-sanitizer/lib/index.js`](plugins/dsh-electron-env-sanitizer/lib/index.js) 顶部注释。
+
+- 文件：[`plugins/dsh-electron-env-sanitizer/`](plugins/dsh-electron-env-sanitizer/)
+
+### 5. `dsh-work-mode` — 办公 / 代码工作模式切换
+
+在输入框下方常驻一个模式胶囊，**点一下即可在「办公」与「代码」之间即时切换**，无需重启会话
+（类似 Codex ↔ ChatGPT Work 的切换体验）；「设置 → 通用」里另有「办公 / 代码 / 两者」三选一行。
+
+切换时同步写入四项偏好，宿主即时生效：
+
+| 配置项 | 办公 | 代码 |
+|---|---|---|
+| `ui-chat.transcriptView` | `compact` | `standard` |
+| `ui-chat.performanceUsage` | `compact` | `detailed` |
+| `ui-settings.developerTools` | 关 | 开 |
+| `ui-settings-account.purpose` | `office` | `development` / `both` |
+
+> 这一项 `purpose` 正是 DSH 桌面版首次启动引导向导里「办公 / 代码」选择所写入的字段；
+> 插件把它变成可随时切换的开关，避免引导选择在升级后丢失或无法更改。
+> 切换只影响界面偏好（对话视图、用量显示、开发者工具），不影响模型能力与技能。
+
+- 注入点：`conversation.composer.dock` + `settings.general.item`
+- 无需凭据、无外联
+- 文件：[`plugins/dsh-work-mode/`](plugins/dsh-work-mode/)
+
+---
+
+## 快速开始
+
+### 环境要求
+
+| 项 | 要求 |
+|---|---|
+| DSH | 桌面版（当前验证基线 `0.2.1-rc.2`） |
+| 插件协议 | cordis `^4.0.1`、React 18（由 DSH 宿主提供） |
+| 操作系统 | Windows（全部插件在 Windows 桌面版上验证） |
+
+### 安装插件
+
+**方式一：一键部署包（推荐）**
+
+```powershell
+# 以 dsh-billing 为例
+cd deploy\dsh-billing-deploy
+pwsh -File install.ps1
+```
+
+脚本会把 `package\` 内容复制到 `$env:USERPROFILE\.dsh\local-plugins\<插件名>\`。
+
+**方式二：手动放置**
+
+```powershell
+Copy-Item -Recurse plugins\dsh-billing "$env:USERPROFILE\.dsh\local-plugins\dsh-billing"
+```
+
+放置后**重启 DSH 桌面版**生效。
+
+> `dsh-work-mode` 需要注册进 profile 才会加载。放置后执行一次：
+>
+> ```powershell
+> dsh plugin --profile desktop add "$env:USERPROFILE\.dsh\local-plugins\dsh-work-mode"
+> ```
+>
+> 然后在该 profile 的 `cordis.patch.yml` 末尾追加：
+>
+> ```yaml
+> - insert:
+>     - id: dsh-work-mode
+>       name: '@deepseek-ai/dsh-work-mode'
+> ```
+>
+> 重启后输入框下方会出现模式胶囊。
+
+### 验证
+
+- 重启后打开一个会话，确认插件入口出现（如 `dsh-work-mode` 的模式胶囊、`dsh-billing` 的余额条）。
+- 修改 `cordis.patch.yml` 后若未生效，先确认 DSH 是**完全退出再启动**（不是刷新页面）。
+- 插件加载失败时查看 `%APPDATA%\@deepseek-ai\dsh-desktop\logs\` 下的最新日志。
 
 ---
 
@@ -98,85 +246,6 @@ dsh --profile headless "只回复两个字：正常"   # 期望：正常（实�
 
 ---
 
-## 这是什么
-
-DSH 桌面版提供了一套插件（cordis 插件）机制，允许在 Host 与 Web 两个半侧注入自定义能力。
-本仓库归档的是我在实际使用中**自己写出来并跑通**的东西，分四类：
-
-| 目录 | 内容 | 说明 |
-|---|---|---|
-| [`plugins/`](plugins/) | 5 个客户端插件源码 | 可直接放入 `$DSH_HOME/local-plugins/` 使用 |
-| [`deploy/`](deploy/) | 插件一键部署包 | 含 `install.ps1` 与使用说明 |
-| [`tools/`](tools/) | 会话检索与 asar 解析工具 | 独立 Node 脚本，不依赖 DSH 运行 |
-| [`docs/`](docs/) | 中文实践文档 | 配置、迁移、升级、安全架构等 |
-
----
-
-## 插件一览
-
-### 1. `dsh-billing` — 余额与消费显示
-在聊天输入框下方常驻显示 **DeepSeek 平台充值余额**与**当前会话消费金额**。
-通过宿主半侧 spawn 一个 Node 小助手进程请求平台接口，避免在渲染进程直接暴露凭据。
-
-- 注入点：`dsh-client-ui-conversation`
-- 凭据来源：插件目录下 `config.json`（**仓库内为空模板**）
-- 安全：token 经**环境变量**传给子进程，**不走命令行参数**
-  （Windows 上命令行可被同机其它进程通过 WMI/CIM 读取）
-- 文件：[`plugins/dsh-billing/`](plugins/dsh-billing/)
-
-> ⚠️ 使用前请把 `config.json` 的 `token` 换成你自己的平台登录令牌，**不要提交到任何仓库**。
-> 该文件已被 `.gitignore` 排除。
-
-### 2. `dsh-poetry` — 侧边栏诗泉
-侧边栏常驻的小面板，从 `poetry.palemoky.com` 在线接口随机拉取一首中国古典诗词展示。
-
-- 注入点：`dsh-client-ui-sidebar`
-- 无需凭据
-- 文件：[`plugins/dsh-poetry/`](plugins/dsh-poetry/)
-
-### 3. `dsh-find` — 会话内查找
-在会话里提供 **Ctrl+F 查找条**：高亮 + 上一处/下一处跳转。
-基于 DOM 文本级匹配，**对中文分词友好**（不依赖浏览器原生 find）。
-
-- 注入点：`dsh-client-runtime`（纯客户端）
-- 无需凭据
-- 文件：[`plugins/dsh-find/`](plugins/dsh-find/)
-
-### 4. `dsh-electron-env-sanitizer` — Electron 环境变量净化
-**修复 DSH 桌面版一个真实缺陷**：宿主进程残留 `ELECTRON_RUN_AS_NODE=1`，
-被 spawn 的子进程继承后，导致 VS Code / Cursor 等 Electron 系应用**以 Node 模式启动**，
-表现为「用 VS Code 打开」报「操作失败，请重试」。
-
-插件在宿主启动时从 `process.env` 删除该变量，恢复子进程正常 GUI 启动。
-
-> 完整根因分析（含 `scrubbedParentEnv()` 为何漏掉此变量）见
-> [`plugins/dsh-electron-env-sanitizer/lib/index.js`](plugins/dsh-electron-env-sanitizer/lib/index.js) 顶部注释。
-
-- 文件：[`plugins/dsh-electron-env-sanitizer/`](plugins/dsh-electron-env-sanitizer/)
-
-### 5. `dsh-work-mode` — 办公 / 代码工作模式切换
-在输入框下方常驻一个模式胶囊，**点一下即可在「办公」与「代码」之间即时切换**，无需重启会话
-（类似 Codex ↔ ChatGPT Work 的切换体验）；「设置 → 通用」里另有「办公 / 代码 / 两者」三选一行。
-
-切换时同步写入四项偏好，宿主即时生效：
-
-| 配置项 | 办公 | 代码 |
-|---|---|---|
-| `ui-chat.transcriptView` | `compact` | `standard` |
-| `ui-chat.performanceUsage` | `compact` | `detailed` |
-| `ui-settings.developerTools` | 关 | 开 |
-| `ui-settings-account.purpose` | `office` | `development` / `both` |
-
-> 这一项 `purpose` 正是 DSH 桌面版首次启动引导向导里「办公 / 代码」选择所写入的字段；
-> 插件把它变成可随时切换的开关，避免引导选择在升级后丢失或无法更改。
-> 切换只影响界面偏好（对话视图、用量显示、开发者工具），不影响模型能力与技能。
-
-- 注入点：`conversation.composer.dock` + `settings.general.item`
-- 无需凭据、无外联
-- 文件：[`plugins/dsh-work-mode/`](plugins/dsh-work-mode/)
-
----
-
 ## 工具一览
 
 | 工具 | 用途 |
@@ -208,46 +277,16 @@ DSH 桌面版提供了一套插件（cordis 插件）机制，允许在 Host 与
 
 ---
 
-## 安装插件
+## 兼容性
 
-### 方式一：一键部署包（推荐）
+| 组件 | 版本 | 状态 |
+|---|---|---|
+| DSH 桌面版 | `0.2.1-rc.2` | ✅ 当前验证基线（全部插件与文档按此版本验证） |
+| DSH 桌面版 | `0.2.0-rc.2` | ⚠️ 部分验证（「资源管理器」修复官方已内置；新插件以 `0.2.1` 为准） |
+| cordis | `^4.0.1` | 插件客户端注入协议要求 |
+| React | 18 | 由 DSH 宿主提供，无需单独安装 |
 
-```powershell
-# 以 dsh-billing 为例
-cd deploy\dsh-billing-deploy
-pwsh -File install.ps1
-```
-
-脚本会把 `package\` 内容复制到 `$env:USERPROFILE\.dsh\local-plugins\<插件名>\`。
-
-### 方式二：手动放置
-
-```powershell
-Copy-Item -Recurse plugins\dsh-billing "$env:USERPROFILE\.dsh\local-plugins\dsh-billing"
-```
-
-放置后**重启 DSH 桌面版**生效。
-
-> `dsh-work-mode` 需要注册进 profile 才会加载。放置后执行一次：
->
-> ```powershell
-> dsh plugin --profile desktop add "$env:USERPROFILE\.dsh\local-plugins\dsh-work-mode"
-> ```
->
-> 然后在该 profile 的 `cordis.patch.yml` 末尾追加：
->
-> ```yaml
-> - insert:
->     - id: dsh-work-mode
->       name: '@deepseek-ai/dsh-work-mode'
-> ```
->
-> 重启后输入框下方会出现模式胶囊。
-
-### 依赖要求
-
-- DSH 桌面版（插件基于 cordis `^4.0.1`、React 18 的客户端注入协议）
-- 插件自带 `package.json`，无需 `npm install`（依赖由宿主提供）
+> 升级 DSH 后如遇插件异常，先查 [实践 Issues](#实践-issues我们踩过并已修复的) 与崩溃日志，再反馈。
 
 ---
 
@@ -334,6 +373,20 @@ $env:HTTP_PROXY  = "http://127.0.0.1:<你的端口>"
 - 文档中出现的 `<USER>` / `<USERPROFILE>` / `<DSH_ROOT>` / `<PORT>` 是脱敏占位符，
   按你的实际环境替换
 - 网络需代理时，用环境变量设置（`HTTPS_PROXY` 等），代码中不硬编码任何端口
+
+---
+
+## 贡献
+
+- **Bug / 建议**：欢迎提 Issue，请附上 DSH 版本、复现步骤与相关日志片段（注意先脱敏）。
+- **Pull Request**：请保持插件 `package.json` 的 `"private": true`，不要提交任何凭据或本机绝对路径。
+- **提交前自检**：
+
+  ```powershell
+  pwsh -File scripts\audit-secrets.ps1
+  ```
+
+  仓库的 gitleaks CI 会在每次 push 时自动运行。
 
 ---
 
