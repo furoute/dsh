@@ -1,0 +1,34 @@
+{
+  "name": "@deepseek-ai/dsh-work-mode",
+  "description": "工作模式切换器：在「办公」与「代码」之间即时切换（对话视图 / 用量显示 / 开发者工具），无需重启会话",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "react": "^18.2.0"
+  },
+  "private": true,
+  "license": "MIT",
+  "files": [
+    "lib/index.js",
+    "lib/client.js"
+  ]
+}

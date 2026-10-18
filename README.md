@@ -68,7 +68,7 @@ DSH 桌面版提供了一套插件（cordis 插件）机制，允许在 Host 与
 
 | 目录 | 内容 | 说明 |
 |---|---|---|
-| [`plugins/`](plugins/) | 4 个客户端插件源码 | 可直接放入 `$DSH_HOME/local-plugins/` 使用 |
+| [`plugins/`](plugins/) | 5 个客户端插件源码 | 可直接放入 `$DSH_HOME/local-plugins/` 使用 |
 | [`deploy/`](deploy/) | 插件一键部署包 | 含 `install.ps1` 与使用说明 |
 | [`tools/`](tools/) | 会话检索与 asar 解析工具 | 独立 Node 脚本，不依赖 DSH 运行 |
 | [`docs/`](docs/) | 中文实践文档 | 配置、迁移、升级、安全架构等 |
@@ -116,6 +116,27 @@ DSH 桌面版提供了一套插件（cordis 插件）机制，允许在 Host 与
 > [`plugins/dsh-electron-env-sanitizer/lib/index.js`](plugins/dsh-electron-env-sanitizer/lib/index.js) 顶部注释。
 
 - 文件：[`plugins/dsh-electron-env-sanitizer/`](plugins/dsh-electron-env-sanitizer/)
+
+### 5. `dsh-work-mode` — 办公 / 代码工作模式切换
+在输入框下方常驻一个模式胶囊，**点一下即可在「办公」与「代码」之间即时切换**，无需重启会话
+（类似 Codex ↔ ChatGPT Work 的切换体验）；「设置 → 通用」里另有「办公 / 代码 / 两者」三选一行。
+
+切换时同步写入四项偏好，宿主即时生效：
+
+| 配置项 | 办公 | 代码 |
+|---|---|---|
+| `ui-chat.transcriptView` | `compact` | `standard` |
+| `ui-chat.performanceUsage` | `compact` | `detailed` |
+| `ui-settings.developerTools` | 关 | 开 |
+| `ui-settings-account.purpose` | `office` | `development` / `both` |
+
+> 这一项 `purpose` 正是 DSH 桌面版首次启动引导向导里「办公 / 代码」选择所写入的字段；
+> 插件把它变成可随时切换的开关，避免引导选择在升级后丢失或无法更改。
+> 切换只影响界面偏好（对话视图、用量显示、开发者工具），不影响模型能力与技能。
+
+- 注入点：`conversation.composer.dock` + `settings.general.item`
+- 无需凭据、无外联
+- 文件：[`plugins/dsh-work-mode/`](plugins/dsh-work-mode/)
 
 ---
 
@@ -170,6 +191,22 @@ Copy-Item -Recurse plugins\dsh-billing "$env:USERPROFILE\.dsh\local-plugins\dsh-
 
 放置后**重启 DSH 桌面版**生效。
 
+> `dsh-work-mode` 需要注册进 profile 才会加载。放置后执行一次：
+>
+> ```powershell
+> dsh plugin --profile desktop add "$env:USERPROFILE\.dsh\local-plugins\dsh-work-mode"
+> ```
+>
+> 然后在该 profile 的 `cordis.patch.yml` 末尾追加：
+>
+> ```yaml
+> - insert:
+>     - id: dsh-work-mode
+>       name: '@deepseek-ai/dsh-work-mode'
+> ```
+>
+> 重启后输入框下方会出现模式胶囊。
+
 ### 依赖要求
 
 - DSH 桌面版（插件基于 cordis `^4.0.1`、React 18 的客户端注入协议）
@@ -216,6 +253,7 @@ pwsh -File scripts\audit-secrets.ps1   # 审计闸门，发现敏感信息即非
 |---|---|---|---|
 | `dsh-billing` | `platform.deepseek.com` | 读取**你自己的**余额与会话消费 | 仅本人 token |
 | `dsh-poetry` | `poetry.palemoky.com` | 随机取一首古诗词 | 否（纯 GET） |
+| `dsh-work-mode` | 无外联 | 仅读写本机 DSH 设置（`configForms`） | 否 |
 
 除此之外**没有任何其它外联**。
 
