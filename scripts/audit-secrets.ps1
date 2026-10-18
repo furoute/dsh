@@ -97,6 +97,11 @@ foreach ($f in $files) {
   # ---------- 编码类检测（base64 / 长 hex）----------
   foreach ($m in [regex]::Matches($text, '(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{40,}={0,2}(?![A-Za-z0-9+/])')) {
     # 只报"看起来像编码过的凭据"，跳过常见的纯文本长串（如哈希、URL）
+    # 窄豁免：命中片段前后 80 字符内出现 http(s):// 时视为 URL 的一部分
+    # （典型：README 顶部的 shields.io / GitHub Actions badge），不是编码凭据。
+    $ctxStart = [Math]::Max(0, $m.Index - 80)
+    $ctxLen = [Math]::Min(160, $text.Length - $ctxStart)
+    if ($text.Substring($ctxStart, $ctxLen) -match 'https?://') { continue }
     $line = ($text.Substring(0, $m.Index) -split "`n").Count
     $hits += [pscustomobject]@{
       规则 = '长 base64 串（请人工确认是否编码凭据）'; 文件 = $rel; 行 = $line
