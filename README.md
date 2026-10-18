@@ -12,7 +12,28 @@
 
 ---
 
-## 🔴 最近更新（2026-10-17）：升级 0.2.1-rc.2 后启动失败？
+## 🔴 最近更新（2026-10-18）
+
+- 新增插件 [`dsh-work-mode`](plugins/dsh-work-mode/)：办公 / 代码模式**即时切换**（不重启会话），
+  对应 DSH 引导向导里的 `purpose` 字段。
+- 我们踩过并已修复的问题已归置为 **[实践 Issues](#实践-issues我们踩过并已修复的)** 章节：
+  升级 `0.2.1-rc.2` 启动失败、CLI `MISSING_CREDENTIAL`、「用文件资源管理器打开」打不开，共 3 条。
+
+---
+
+## 实践 Issues（我们踩过并已修复的）
+
+> 这里只收录**本仓库作者在真实环境中遇到、定位、修复并复测过**的问题。
+> 每条都附完整排障记录（含走过的弯路与验证方法）；官方在后续版本已修复的，会注明版本与验证日期。
+> 它不是官方公告的转述，而是我们自己的实践记录。
+
+| # | 问题 | 根因（一句话） | 状态 | 详细记录 |
+|---|---|---|---|---|
+| 1 | 升级 `0.2.1-rc.2` 后 DSH 打不开 | 用户级环境变量 `DSH_TOOLS_MODE=both`，新版 `dsh-tools` 只认 `native` / `ptc` | ✅ 已修复并复测 | [升级事故与 DSH_TOOLS_MODE 排障](docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md) |
+| 2 | CLI（headless）报 `MISSING_CREDENTIAL` | `dsh-headless` bundle 把凭据服务设为 `disabled: true` | ✅ 已修复并复测 | 同上 |
+| 3 | 「用文件资源管理器打开」打不开文件夹 | `runNativeCommand` 固定 `windowsHide: true`，`explorer.exe` 继承 `SW_HIDE` | ✅ 已修复（`0.2.0-rc.2` 官方已内置等价修复） | [部署与迁移总结 · 第八节](docs/桌面版DSH部署与迁移总结.md#八修复实录用文件资源管理器打开按钮打不开文件夹2026-09-28) |
+
+### Issue #1 · 升级 `0.2.1-rc.2` 后启动失败（2026-10-17）
 
 **如果 DSH 桌面版升级到 `0.2.1-rc.2` 后打不开，弹出「插件全部加载失败」，先查这一条 —— 5 秒就能定位：**
 
@@ -28,11 +49,12 @@
 ```
 
 **要点三条：**
+
 1. **报错框误导人** —— 它让你「禁用第三方插件」，但真凶是核心 `tools` 插件，第三方插件只是被牵连。
 2. **真错误在崩溃日志里** —— `%APPDATA%\@deepseek-ai\dsh-desktop\logs\crash-*.log`，搜 `invalid config`。
 3. **升级要连带升级 CLI** —— 桌面版新、全局 `dsh` 和 profile 依赖旧，会隐性错配。
 
-### 同一个版本还有第二个坑：CLI 报 `MISSING_CREDENTIAL`
+### Issue #2 · CLI（headless）报 `MISSING_CREDENTIAL`（2026-10-17）
 
 **桌面版好了，但用 SSH 唤醒 CLI（headless）仍然不通。** 原因不是 key 丢了，而是新版 `dsh-headless` bundle 把凭据服务禁用了：
 
@@ -58,6 +80,21 @@ dsh --profile headless "只回复两个字：正常"   # 期望：正常（实�
 > 然后删掉用户级 `DSH_TOOLS_MODE` —— 以后某个 profile 想切 `ptc` 不会连累其他两个。
 
 📄 完整排障记录（含 6 个查错弯路清单 + CLI 凭证坑 + 环境变量治理）：**[docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md](docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md)**
+
+### Issue #3 · 「用文件资源管理器打开」打不开文件夹（2026-09-28）
+
+**现象**：点击会话右上角的「**用 文件资源管理器 打开**」（快捷键 `Ctrl+Alt+O`）后，文件夹窗口没有出现；
+用窗口枚举看，`explorer.exe` 进程确实起来了、窗口也在，但 `WS_VISIBLE = 0`（不可见）。
+
+**真根因**：`runNativeCommand()` 对所有命令固定 `windowsHide: true`。这个选项本意是给 `reg.exe` 这类
+**控制台工具**「别闪黑框」，但 **`explorer.exe` 是 GUI 启动器**，它继承 `SW_HIDE` 后，窗口被创建出来却是隐藏的。
+当时一度怀疑「前台窗口锁」「状态累积」，都被 A/B 对照否定了——任务栏里那个「隐形窗口」就是证据。
+
+**修复**：本机当时对 `app.asar` 内的执行器做了等长原地修补（仅 GUI 启动器不隐藏，其余命令保持隐藏）。
+**官方已在 `0.2.0-rc.2` 内置等价修复**（`windowsHide: window === "hidden"`，explorer 调用显式传 `visible`），
+所以 9-28 的等长补丁随升级被覆盖，**无需重打**。
+
+📄 完整实录（含 A/B 对照、窗口计数、`ELECTRON_RUN_AS_NODE` 同批发现与「危险修法」）：**[docs/桌面版DSH部署与迁移总结.md 第八节](docs/桌面版DSH部署与迁移总结.md#八修复实录用文件资源管理器打开按钮打不开文件夹2026-09-28)**
 
 ---
 
