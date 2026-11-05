@@ -28,7 +28,15 @@
 
 ---
 
-## 🔴 最近更新（2026-10-18）
+## 🔴 最近更新（2026-11-05）
+
+- **升级 0.2.2-rc.1 踩坑记录**：`tools.mode` 与 `llm-deepseek-account.models` 双双被废弃，
+  上一版「把 mode 改成 native」的修法在这一版直接变成致命错误。
+  新文档含崩溃日志定位法、插件恢复步骤、弯路清单。
+- 兼容性基线待更新到 `0.2.2-rc.1`（插件 `subagent-codex` / `computer-use` 仍是 0.2.1-rc.2 包，
+  peer 不满足但实测可用，属兼容性侥幸）。
+
+## 🔴 历史更新（2026-10-18）
 
 - 新增插件 [`dsh-work-mode`](plugins/dsh-work-mode/)：办公 / 代码模式**即时切换**（不重启会话）。
 - 新增「实践 Issues」章节，归置 3 条已修复问题（升级启动失败、CLI 凭证、资源管理器打开）。
@@ -272,6 +280,7 @@ dsh --profile headless "只回复两个字：正常"   # 期望：正常（实�
 | [桌面版DSH部署与迁移总结](docs/桌面版DSH部署与迁移总结.md) | 部署与迁移完整记录 |
 | [DSH-快速升级手册](docs/DSH-快速升级手册.md) | 版本升级流程 |
 | [DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障](docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md) | 升级后启动失败的真因：环境变量 `DSH_TOOLS_MODE=both`（含弯路清单）|
+| [DSH-0.2.2-rc.1-升级事故与插件恢复](docs/DSH-0.2.2-rc.1-升级事故与插件恢复.md) | 升级后启动失败：`tools.mode` 与 `llm-deepseek-account.models` 双双废弃；含插件恢复与弯路清单 |
 | [Agent产物归类方法](docs/Agent产物归类方法.md) | Agent 产物组织思路 |
 | [dsh-security-architecture.svg](docs/dsh-security-architecture.svg) | 安全架构图 |
 
