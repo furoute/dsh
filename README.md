@@ -271,6 +271,9 @@ dsh --profile headless "只回复两个字：正常"   # 期望：正常（实�
 
 另有一份功能建议：[`tools/DSH会话搜索-功能建议.md`](tools/DSH会话搜索-功能建议.md)
 
+**发布流水线脚本**：`scripts/` 下四个脚本（密钥审计、脱敏复制、推送、远端复验）是维护者自用，
+**clone 后不需要运行**。它们做什么、会不会被安全软件误报，见 [`scripts/README.md`](scripts/README.md)。
+
 ---
 
 ## 文档一览
