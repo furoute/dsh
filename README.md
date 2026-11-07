@@ -271,9 +271,6 @@ dsh --profile headless "只回复两个字：正常"   # 期望：正常（实�
 
 另有一份功能建议：[`tools/DSH会话搜索-功能建议.md`](tools/DSH会话搜索-功能建议.md)
 
-**发布流水线脚本**：`scripts/` 下四个脚本（密钥审计、脱敏复制、推送、远端复验）是维护者自用，
-**clone 后不需要运行**。它们做什么、会不会被安全软件误报，见 [`scripts/README.md`](scripts/README.md)。
-
 ---
 
 ## 文档一览
@@ -310,17 +307,11 @@ dsh --profile headless "只回复两个字：正常"   # 期望：正常（实�
 
 ## 安全与脱敏
 
-本仓库的每一条内容都经过**归档管线**处理，而非手工挑选。管线在
-[`scripts/`](scripts/) 中可复现：
+本仓库的每一条内容都经过**归档管线**处理，而非手工挑选：白名单式取件（只收显式列出的文件，
+不整目录搬运），再按规则表替换私有信息，最后过一道阻断式扫描，命中即拒绝推送。
 
-```powershell
-pwsh -File scripts\sanitize-copy.ps1   # 白名单复制 + 自动脱敏
-pwsh -File scripts\audit-secrets.ps1   # 审计闸门，发现敏感信息即非零退出
-```
-
-> 两台电脑的工作区根不同时，用 `DSH_WORKSPACE` 把它们都列上（分号或逗号分隔），
-> 一次运行即同时脱敏两种写法：
-> `$env:DSH_WORKSPACE = "<根1>;<根2>"; pwsh -File scripts\sanitize-copy.ps1`
+管线的规则表公开在 [SECURITY.md](SECURITY.md#二脱敏规则)，
+**发布工具本身属于维护者环境，不进仓库**——避免 clone 者误以为需要运行它们。
 
 > 最初本仓库是用 GitHub REST API 推送的（开发机未装 git）。现已改用
 > **标准 git 流程**维护，CI 闸门随每次 push 自动运行。
@@ -377,7 +368,6 @@ $env:HTTP_PROXY  = "http://127.0.0.1:<你的端口>"
 
 | 闸门 | 实现者 | 何时运行 |
 |---|---|---|
-| `scripts/audit-secrets.ps1` | 本仓库作者 | 推送前手动 |
 | [`.gitleaks.toml`](.gitleaks.toml) + [GitHub Actions](.github/workflows/secret-scan.yml) | **第三方** gitleaks | **每次 push 自动** |
 | 外部独立复核 | 其它 AI 智能体 | 阶段性人工发起 |
 
@@ -398,13 +388,8 @@ $env:HTTP_PROXY  = "http://127.0.0.1:<你的端口>"
 
 - **Bug / 建议**：欢迎提 Issue，请附上 DSH 版本、复现步骤与相关日志片段（注意先脱敏）。
 - **Pull Request**：请保持插件 `package.json` 的 `"private": true`，不要提交任何凭据或本机绝对路径。
-- **提交前自检**：
-
-  ```powershell
-  pwsh -File scripts\audit-secrets.ps1
-  ```
-
-  仓库的 gitleaks CI 会在每次 push 时自动运行。
+- **提交前自检**：仓库的 gitleaks CI 会在每次 push 时自动运行；本地也可以先跑一遍
+  `gitleaks detect --source . --verbose`。
 
 ---
 
