@@ -50,13 +50,33 @@ chmod 600 ~/.ssh/authorized_keys
 ### 定位一台 IP 会变的机器
 
 笔记本用 DHCP，每次开机 IP 不同（实测见过 `.109` / `.113` / `.119`）。
-靠 **hostname + SSH 探测** 认亲，不靠 IP：
+两种认亲方式，按你手上有什么信息选：
+
+**知道 MAC → 用 ARP 扫（快，一个 /24 一两秒）**
+
+`lan-find.sh` 在 ACP-Lite 仓库根目录：
 
 ```bash
-# 扫网段，对每个开着 22 的地址执行 hostname，比对期望主机名
-python3 find_laptop.py            # 结果缓存到 ~/.hermes/cache/laptop_ip.txt
-python3 find_laptop.py --rescan   # 强制重扫
+./lan-find.sh aa:bb:cc:dd:ee:ff              # → 192.168.1.42
+./lan-find.sh aa:bb:cc:dd:ee:ff 192.168.0    # 指定网段
 ```
+
+**只知道 hostname → 用 SSH 探测（慢些，但跨网段也能用，且不怕 MAC 随机化）**
+
+`host-find.sh` 同样在 ACP-Lite 仓库根目录：
+
+```bash
+./host-find.sh <hostname>                       # 默认扫 192.168.0 / 192.168.1 / 10.0.0
+./host-find.sh <hostname> <ssh-user>            # 指定 SSH 用户
+./host-find.sh <hostname> <ssh-user> 192.168.0  # 指定网段
+```
+
+原理：并发探 22 端口，再对每个开着的地址跑一次 `ssh ... hostname` 比对。
+一个 /24 约 2-11 秒。
+
+> 两个脚本都在 `furoute/acp-lite` 仓库里，README 的 Q13b 有完整说明。
+> 如果你的环境只需要认一台常开机器，也可以在自己机器上放个缓存版（先查缓存，
+> 失效再重扫），但不建议把这类脚本散落到各个项目里 —— 统一从 ACP-Lite 拿。
 
 ---
 
