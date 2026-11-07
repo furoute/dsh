@@ -202,7 +202,7 @@ dsh --profile web --host 127.0.0.1 --port 7788 --no-open
 
 ```
 dsh web: listening on 127.0.0.1 over plain HTTP
-dsh web: http://127.0.0.1:7788/?token=<一次性 token>
+dsh web: http://127.0.0.1:7788/  ← 启动日志里会打印完整地址，带一次性凭据
 ```
 
 **如果 bind 到 `0.0.0.0` 或局域网 IP，会直接启动失败**：
@@ -224,7 +224,7 @@ if (ctx.webServer.host !== '127.0.0.1')
 
 ```bash
 ssh -L 7788:127.0.0.1:7788 <user>@<host>
-# 然后在本地浏览器开 http://127.0.0.1:7788/?token=<token>
+# 然后在本地浏览器开 http://127.0.0.1:7788/ （凭据见笔记本上那次启动的日志）
 ```
 
 ---
