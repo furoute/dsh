@@ -33,6 +33,13 @@
 - **super agent 在 Ubuntu 上跑通**：Windows 因 loopback 校验 + POSIX 路径要求跑不起来，
   Linux 一次成功。文档含 SSH 准备、GitHub 专用账号、三个配置块、规则放宽、两次实测。
 
+  → **[完整实录（十五节 + 排障速查表）](docs/DSH-Superagent-Ubuntu部署与实测-20261107.md)**
+
+  最容易卡住的三节：
+  [① 为什么选 Ubuntu 而不是 Windows](docs/DSH-Superagent-Ubuntu部署与实测-20261107.md#一为什么选-ubuntu-而不是-windows) ·
+  [② 启动必须绑 127.0.0.1](docs/DSH-Superagent-Ubuntu部署与实测-20261107.md#七启动必须绑-127001) ·
+  [③ 重启后自恢复](docs/DSH-Superagent-Ubuntu部署与实测-20261107.md#十五重启后自恢复两个重启就丢的坑)
+
 ## 🔴 更早更新（2026-11-05）
 
 - **升级 0.2.2-rc.1 踩坑记录**：`tools.mode` 与 `llm-deepseek-account.models` 双双被废弃，
@@ -289,6 +296,22 @@ dsh --profile headless "只回复两个字：正常"   # 期望：正常（实�
 | [DSH-Superagent Ubuntu 部署与实测](docs/DSH-Superagent-Ubuntu部署与实测-20261107.md) | 在 Linux 上从零跑通 super agent：环境、GitHub 授权、三个配置块、规则放宽、两次真实任务 |
 | [Agent产物归类方法](docs/Agent产物归类方法.md) | Agent 产物组织思路 |
 | [dsh-security-architecture.svg](docs/dsh-security-architecture.svg) | 安全架构图 |
+
+### 定位 IP 会变的主机
+
+DSH 常部署在 DHCP 的机器上（笔记本、台式机 IP 每次开机都可能不同）。找机器别写死 IP：
+
+- **知道 MAC** → ACP-Lite 仓库的 [`lan-find.sh`](https://github.com/furoute/acp-lite/blob/main/lan-find.sh)
+  （并发 ping 填满 ARP 表，一个 /24 一两秒）
+- **只知道 hostname** → ACP-Lite 仓库的 [`host-find.sh`](https://github.com/furoute/acp-lite/blob/main/host-find.sh)
+  （探 22 端口 + 比对 hostname，跨网段可用，不怕 MAC 随机化）
+
+```bash
+./lan-find.sh aa:bb:cc:dd:ee:ff              # → 192.168.1.42
+./host-find.sh <hostname> <ssh-user> 192.168.0
+```
+
+> 这两个脚本维护在 ACP-Lite 里，不在这里重复放一份 —— 别让同一段代码在两处漂移。
 
 ---
 
