@@ -28,7 +28,12 @@
 
 ---
 
-## 🔴 最近更新（2026-11-05）
+## 🔴 最近更新（2026-11-07）
+
+- **super agent 在 Ubuntu 上跑通**：Windows 因 loopback 校验 + POSIX 路径要求跑不起来，
+  Linux 一次成功。文档含 SSH 准备、GitHub 专用账号、三个配置块、规则放宽、两次实测。
+
+## 🔴 更早更新（2026-11-05）
 
 - **升级 0.2.2-rc.1 踩坑记录**：`tools.mode` 与 `llm-deepseek-account.models` 双双被废弃，
   上一版「把 mode 改成 native」的修法在这一版直接变成致命错误。
@@ -281,6 +286,7 @@ dsh --profile headless "只回复两个字：正常"   # 期望：正常（实�
 | [DSH-快速升级手册](docs/DSH-快速升级手册.md) | 版本升级流程 |
 | [DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障](docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md) | 升级后启动失败的真因：环境变量 `DSH_TOOLS_MODE=both`（含弯路清单）|
 | [DSH-0.2.2-rc.1-升级事故与插件恢复](docs/DSH-0.2.2-rc.1-升级事故与插件恢复.md) | 升级后启动失败：`tools.mode` 与 `llm-deepseek-account.models` 双双废弃；含插件恢复与弯路清单 |
+| [DSH-Superagent Ubuntu 部署与实测](docs/DSH-Superagent-Ubuntu部署与实测-20261107.md) | 在 Linux 上从零跑通 super agent：环境、GitHub 授权、三个配置块、规则放宽、两次真实任务 |
 | [Agent产物归类方法](docs/Agent产物归类方法.md) | Agent 产物组织思路 |
 | [dsh-security-architecture.svg](docs/dsh-security-architecture.svg) | 安全架构图 |
 
