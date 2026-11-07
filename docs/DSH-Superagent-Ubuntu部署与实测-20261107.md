@@ -475,6 +475,81 @@ Requested in #3.                                  ← 来源引用
 
 ---
 
+## 十五、重启后自恢复：两个「重启就丢」的坑
+
+第一次重启笔记本后，服务起不来，报了两个错。都不是配置写错，是**存的东西不在重启后还在的地方**。
+
+### 坑 1：`gh` 的 token 存在桌面钥匙串里
+
+```
+X Failed to log in to github.com account <name> (default)
+  - The token in default is invalid.
+```
+
+`~/.config/gh/hosts.yml` 里只有用户名，token 在 `gnome-keyring`。
+**桌面没登录 → 钥匙串没解锁 → SSH 会话读不到 token。**
+
+这和 SSH 本身无关：SSH 走密钥认证，照样能进；是 gh 读不到凭据。
+
+**修法：把 token 明文写进 `hosts.yml`，绕开 keyring。**
+
+```bash
+gh auth login --with-token <<< "$TOKEN"
+# 或直接写：
+cat > ~/.config/gh/hosts.yml <<EOF
+github.com:
+    users:
+        <agent>:
+            oauth_token: <token>
+    oauth_token: <token>
+    git_protocol: https
+    user: <agent>
+EOF
+chmod 600 ~/.config/gh/hosts.yml
+```
+
+**代价**：token 明文落在磁盘（权限 600，只有当前用户能读）。
+**取舍**：比「每次开机要登录桌面」划算。介意就跑 `gh auth login` 重建，定期轮换。
+
+### 坑 2：`~/.local/bin` 不在 SSH 会话的 PATH 里
+
+```
+gh-agent: 未找到命令
+```
+
+`gh-agent` 包装脚本在 `~/.local/bin/`，但那目录不在默认 PATH。
+
+**修法：写进 `.bashrc` 最前面**（同 API Key，必须在非交互 return 之前）：
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+### 重启后的完整自检
+
+```bash
+uptime -p                                            # 确认真的重启了
+gh auth status                                       # 应显示 Logged in
+bash -c 'source ~/.bashrc; which gh-agent'           # 应找到包装脚本
+bash -c 'source ~/.bashrc; dsh --profile web --host 127.0.0.1 --port 7788 --no-open'
+# 然后 GET /orchestrator/api/state，setup.problem 应为 null，health 全部 ready
+```
+
+实测结果：重启后照此执行，`setup.problem: null`，全部健康项 ready，GitHub 源 ready。
+
+### 决定：不做开机自启
+
+理由和别处一致 —— 多一个常驻配置，将来重装系统容易忘。
+代价是每次开机要手动拉一次，接受。
+
+```bash
+python3 find_laptop.py                                   # 先定位（IP 每次变）
+ssh <user>@<ip>
+dsh --profile web --host 127.0.0.1 --port 7788 --no-open # 起服务
+```
+
+---
+
 ## 附：版本与配置基线（本次实测）
 
 ```
