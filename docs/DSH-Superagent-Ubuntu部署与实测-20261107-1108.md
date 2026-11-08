@@ -1,4 +1,4 @@
-# 在 Ubuntu 上部署 dsh-superagent 并跑通首个任务（2026-11-07 实录）
+# 在 Ubuntu 上部署 dsh-superagent 并跑通全流程（2026-11-07 ~ 11-08 实录）
 
 > **一句话**：super agent 是 DSH 的一个扩展包。它要求 **POSIX 路径 + loopback Web 服务**，
 > 所以 Windows 上跑不起来，Linux 上一装就通。
