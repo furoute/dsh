@@ -285,4 +285,4 @@ dsh --profile headless "只回复两个字：正常"
 ---
 
 *本记录由蓝莓（Hermes）在 2026-10-17 夜间依据实机处置过程整理。涉及版本：0.2.0-rc.2 → 0.2.1-rc.2；
-主机：DESKTOP-6KDMR6C（Windows）。*
+主机：Windows 台式机（主机名略）。*
