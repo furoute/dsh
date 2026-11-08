@@ -805,6 +805,229 @@ super agent    那边有事件进来 → 它自己判断要不要接 → 接了�
 
 ---
 
+## 十八、飞书通道打通实录：从零到群里直接派活
+
+super agent 原生支持两个来源：GitHub 和飞书。GitHub 那边开箱即用，
+飞书要多几步——而且**坑集中在前置条件和权限上**，不是代码问题。
+
+这一节记录完整过程，照着做能复现。
+
+### 为什么选飞书
+
+```
+微信      留给蓝莓（Hermes）
+钉钉      留给蛋糕（OpenClaw）
+飞书      super agent 自己用，互不打架
+```
+
+super agent 的代码里飞书是**一等公民**：`feishu-channel` / `feishu-trigger` /
+`feishu-read` / `feishu-image` / `feishu-loops` 全都有实现。
+
+### 第一步：建应用（这步只能人做）
+
+到开放平台 <https://open.feishu.cn/app> 建一个**自建应用**，开机器人能力。
+
+需要的最小权限集：
+
+```
+im:message                   收发消息
+im:message:send_as_bot       以机器人身份发
+im:chat:readonly             读群信息
+im:chat.group_info:readonly  读群资料
+im:chat.members:read         读群成员（拿 open_id）
+```
+
+**改完权限必须「发布版本」，否则不生效。** 这一步最容易漏——
+权限申请了但没发布，接口照样报 `app_scope_not_applied`。
+
+拿到的 **App ID / App Secret 是凭据**：不要贴进聊天、不要写进仓库。
+本文档里一律用 `<APP_ID>` / `<APP_SECRET>` 代替。
+
+### 第二步：装 lark-cli
+
+super agent **不直接调飞书 API**，而是通过官方 CLI 转发：
+
+```
+它的配置项只有一个：机器人的 lark-cli（命令名或绝对路径）
+```
+
+官方仓库是 [larksuite/cli](https://github.com/larksuite/cli)，npm 包名 `@larksuite/cli`。
+
+```bash
+# 全局 npm 目录常常没写权限，装到用户目录更省事
+npm install -g @larksuite/cli --prefix ~/.local
+~/.local/bin/lark-cli --version      # 实测 1.0.99
+```
+
+### 第三步：配机器人身份（关键：必须独立配置目录）
+
+```bash
+export LARKSUITE_CLI_CONFIG_DIR="$HOME/.lark-cli-dsh-superagent"
+
+# secret 从 stdin 读，不落命令行历史
+lark-cli config init --app-id <APP_ID> --app-secret-stdin
+
+# 锁成「只许机器人身份」，不允许冒充用户
+lark-cli config strict-mode bot --global
+```
+
+**为什么必须独立目录**：`lark-cli` 一个 App ID 只允许一个本地 profile。
+如果这个应用你也登录过个人身份，会冲突。super agent 也**拒绝**一个能当用户的 CLI。
+
+然后做个包装脚本，把这些环境变量固化下来：
+
+```bash
+cat > ~/.local/bin/lark-bot <<'EOF'
+#!/bin/sh
+export LARKSUITE_CLI_CONFIG_DIR="$HOME/.lark-cli-dsh-superagent"
+exec lark-cli "$@"
+EOF
+chmod +x ~/.local/bin/lark-bot
+```
+
+验证：
+
+```bash
+lark-bot auth status
+# "identities": { "bot": { "status": "ready", "available": true } }
+```
+
+### 第四步：把机器人拉进群
+
+在飞书里建群 → 群设置 → 群机器人 → 添加你刚建的应用。
+
+加完用机器人身份验证：
+
+```bash
+lark-bot im +chat-list
+# 应该能看到刚拉进去的那个群，拿到 chat_id（oc_ 开头）
+```
+
+### 第五步：启用源（最容易卡住的一步）
+
+**飞书源在 super agent 的上游 bundle 里默认是 `disabled: true`。**
+所以刚装好时面板里**只有 GitHub，根本没有飞书卡片，也没有「添加来源」按钮**。
+
+看上游 `cordis.patch.yml`：
+
+```yaml
+- insert:
+    - id: dsh-superagent-github
+      name: dsh-superagent/github-watch
+    # Optional Feishu Source; requires configuring a bot CLI after enabling.
+    - id: dsh-superagent-feishu
+      name: dsh-superagent/feishu-watch
+      disabled: true          # ← 就是这里
+```
+
+在 profile 的 patch 里覆盖它：
+
+```yaml
+# ~/.dsh/profiles/web/cordis.patch.yml
+- id: dsh-superagent-feishu
+  disabled: false
+```
+
+重启 `dsh --profile web`，飞书就出现在来源列表里了。
+
+### 第六步：在面板上填配置
+
+启用后飞书卡片会出现，但状态是 `paused`：
+
+```json
+{ "state": "paused", "detail": "The Source is on, and its bot lark-cli is not set",
+  "code": "feishuCliUnset" }
+```
+
+**这个字段只能从面板保存**——`settings/source:feishu` 这个路由对 PUT 返回 404，
+没有对应的写接口。所以必须界面上填：
+
+| 字段 | 填什么 |
+|---|---|
+| 机器人的 lark-cli | `/home/fujun/.local/bin/lark-bot`（绝对路径） |
+| 能发起工作的飞书用户 | 你的 `open_id`（`ou_` 开头） |
+| 群 | 那个测试群的 `chat_id`（`oc_` 开头），接收方式选「全部消息」 |
+| 私聊 | 开 |
+| 其他群 | 「仅 @」 |
+
+保存后它会自动重启并检查机器人。`state` 变成 `ready`、
+`detail: Listening for bot events` 就通了。
+
+### 第七步：评估模式要切到 auto
+
+默认是 `observe`——**看懂、能回话，但不派工**：
+
+```json
+{ "mode": "observe" }
+```
+
+可选的只有三档（不是 `act`，我第一次就猜错了）：
+
+```
+off       完全关掉评估
+observe   只看不派（默认）
+auto      判断该接就建工单派 worker
+```
+
+改成 `auto`：
+
+```bash
+# PUT /orchestrator/api/settings/eval
+{ "value": { "mode": "auto", "timeoutSeconds": 120, "model": null }, "revision": <当前> }
+```
+
+### 第八步：测试
+
+**注意：配置变更只对新消息生效，之前被过滤的消息不会重放。** 改完必须重发。
+
+**闲聊类**（只要回答，不派工）：
+
+```
+@<机器人> 只回复三个字：收到了
+→ 回复「收到了」，不建工单            ← 正确行为
+```
+
+**可执行类**（落在 copy / visual / docs / deps 四类里）：
+
+```
+@<机器人> 请在 README.md 末尾加一行：Feishu test passed
+→ 建工单 → 派 worker → 改文件 → 提 PR #8 → 群里回报
+→ PR 被合并后，它自己又发了一条「PR #8 已成功合并」
+```
+
+**⇒ 从发消息到 PR 提出来约 90 秒；到合并通知约 4 分钟。全程人没介入。**
+
+### 一个反向验证：查询类不派工
+
+在群里问一句「某游戏的最新战况」，它会**联网查了并回答**，
+但**不建工单**——因为规则只有那四类，查询不在其中。
+
+**这不是漏判，恰恰是评估层在工作。**
+
+### 踩过的坑汇总
+
+| 现象 | 原因 | 处理 |
+|---|---|---|
+| 面板里没有飞书，也没有「添加」按钮 | 上游默认 `disabled: true` | 在 profile patch 里覆盖 |
+| `app_scope_not_applied`，缺一堆 `im:chat*` | 权限申请了但没发布版本 | 开放平台「版本管理与发布」点发布 |
+| `The Source is on, and its bot lark-cli is not set` | `cli` 字段为空 | 面板填绝对路径 |
+| `chat_not_allowed`，消息收到却被过滤 | 群不在允许清单里 | 面板加上该群 `chat_id` |
+| 机器人看不见群 | 没拉进群 | 群设置里添加机器人 |
+| `mode: act` 报 Invalid option | 只有 off / observe / auto | 用 `auto` |
+| 改完配置测试没反应 | 旧消息不重放 | 重新发一条 |
+
+### 脱敏提醒
+
+```
+App ID / App Secret   不进文档、不进仓库、不贴聊天
+open_id / chat_id     也算标识符，公开文档里用占位符
+lark-cli 配置目录      含凭据，权限收好
+```
+
+真要用在公开仓库里，App ID 这种东西一律写成 `<APP_ID>`。
+
+---
+
 ## 附：版本与配置基线（本次实测）
 
 ```
