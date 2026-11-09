@@ -99,6 +99,8 @@
 - 注入点：`dsh-client-runtime`（纯客户端）
 - 无需凭据
 - 测试：在 `plugins/dsh-find/` 内跑 `npm test`（零依赖）
+- 桌面版实机验证（0.2.2-rc.1）：泰语句 `ขนมจีนราดแกงกะทิไก่` 中搜 `กะทิ` 命中 1/2；
+  搜句中不存在的 `กุ้ง` / `อาชญากรรม` 均 0 条 —— 确实是子串命中，不是「什么都匹配」
 - 文件：[`plugins/dsh-find/`](plugins/dsh-find/)
 
 ### 4. `dsh-electron-env-sanitizer` — Electron 环境变量净化
