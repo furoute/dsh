@@ -30,15 +30,20 @@
 
 ## 🔴 最近更新（2026-11-09）
 
-- **super agent 在 Ubuntu 上跑通**：Windows 因 loopback 校验 + POSIX 路径要求跑不起来，
-  Linux 一次成功。文档含 SSH 准备、GitHub 专用账号、三个配置块、规则放宽、两次实测。
+- **super agent 全流程实录**（固定文件名，日期只记在这里）
+  → **[docs/DSH-Superagent-Ubuntu部署与实测.md](docs/DSH-Superagent-Ubuntu部署与实测.md)**
 
-  → **[完整实录（十八节 + 排障速查表）](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1109.md)**
+  一次看完：Ubuntu 部署 → 两条通道 → 四个实测案例 → 结论。
 
-  最容易卡住的三节：
-  [① 为什么选 Ubuntu 而不是 Windows](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1109.md) ·
-  [② 启动必须绑 127.0.0.1](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1109.md) ·
-  [③ 重启后自恢复](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1109.md)
+  | 日期 | 更新了什么 |
+  |---|---|
+  | 2026-11-07 | 部署跑通：SSH、环境、CLI、profile、绑 127.0.0.1、GitHub 专用账号、三个配置块、四条规则 |
+  | 2026-11-08 | 补两处「重启就丢」的坑（gh token 在 keyring、`~/.local/bin` 不在 PATH）；第三个实测（开放式研究）；私有仓库即白名单；与普通 DSH 的区别 |
+  | 2026-11-09 | 飞书通道打通（八步 + 七个坑）；案例四（飞书下题 + 换 LightVela 模型）；全文重排精简（1238 → 659 行） |
+
+  最容易卡住的三处：[为什么选 Ubuntu](docs/DSH-Superagent-Ubuntu部署与实测.md) ·
+  [必须绑 127.0.0.1](docs/DSH-Superagent-Ubuntu部署与实测.md) ·
+  [重启后自恢复](docs/DSH-Superagent-Ubuntu部署与实测.md)
 
 ## 🔴 更早更新（2026-11-05）
 
@@ -306,7 +311,7 @@ dsh --profile headless "只回复两个字：正常"   # 期望：正常（实�
 | [DSH-快速升级手册](docs/DSH-快速升级手册.md) | 版本升级流程 |
 | [DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障](docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md) | 升级后启动失败的真因：环境变量 `DSH_TOOLS_MODE=both`（含弯路清单）|
 | [DSH-0.2.2-rc.1-升级事故与插件恢复](docs/DSH-0.2.2-rc.1-升级事故与插件恢复.md) | 升级后启动失败：`tools.mode` 与 `llm-deepseek-account.models` 双双废弃；含插件恢复与弯路清单 |
-| [DSH-Superagent Ubuntu 部署与实测](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1109.md) | 在 Linux 上从零跑通 super agent：环境、GitHub 授权、配置块、规则放宽；三次实测（含开放式研究）、与普通 DSH 的区别、飞书通道打通 |
+| [DSH-Superagent Ubuntu 部署与实测](docs/DSH-Superagent-Ubuntu部署与实测.md) | 固定文件名。部署 → GitHub / 飞书两条通道 → 四个实测案例 → 结论。更新日期见「最近更新」 |
 | [Agent产物归类方法](docs/Agent产物归类方法.md) | Agent 产物组织思路 |
 | [dsh-security-architecture.svg](docs/dsh-security-architecture.svg) | 安全架构图 |
 | [dsh-find 泰语支持说明](docs/dsh-find-泰语支持说明.md) | 无空格文字为什么能搜到：子串匹配 vs FTS 分词的边界，含 0.2.0 的测试与实机验证过程（可直接用于社区回复） |
