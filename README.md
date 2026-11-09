@@ -301,6 +301,7 @@ dsh --profile headless "只回复两个字：正常"   # 期望：正常（实�
 | [DSH-Superagent Ubuntu 部署与实测](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1108.md) | 在 Linux 上从零跑通 super agent：环境、GitHub 授权、配置块、规则放宽；三次实测（含开放式研究）、与普通 DSH 的区别、飞书通道打通 |
 | [Agent产物归类方法](docs/Agent产物归类方法.md) | Agent 产物组织思路 |
 | [dsh-security-architecture.svg](docs/dsh-security-architecture.svg) | 安全架构图 |
+| [dsh-find 泰语支持说明](docs/dsh-find-泰语支持说明.md) | 无空格文字为什么能搜到：子串匹配 vs FTS 分词的边界，含 0.2.0 的测试与实机验证过程（可直接用于社区回复） |
 
 ### 定位 IP 会变的主机
 
