@@ -92,10 +92,13 @@
 ### 3. `dsh-find` — 会话内查找
 
 在会话里提供 **Ctrl+F 查找条**：高亮 + 上一处/下一处跳转。
-基于 DOM 文本级匹配，**对中文分词友好**（不依赖浏览器原生 find）。
+基于 DOM 文本级匹配，**对中文分词友好**（不依赖浏览器原生 find）；
+泰语等无空格语言同样可用（子串匹配，不走 FTS 分词器，见 `test/match.test.mjs` 里的 #1999 复现句）。
+范围是当前已加载会话，不做跨会话检索、不修 FTS 索引。
 
 - 注入点：`dsh-client-runtime`（纯客户端）
 - 无需凭据
+- 测试：在 `plugins/dsh-find/` 内跑 `npm test`（零依赖）
 - 文件：[`plugins/dsh-find/`](plugins/dsh-find/)
 
 ### 4. `dsh-electron-env-sanitizer` — Electron 环境变量净化

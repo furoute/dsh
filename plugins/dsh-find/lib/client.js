@@ -2,7 +2,9 @@
 // Adds a browser-style "find in conversation" bar: Ctrl+F opens it, Enter / Shift+Enter
 // (or F3 / Shift+F3) walks the matches, Esc closes. Matching is plain text-level
 // (substring), so Chinese keywords work — unlike the built-in FTS tokenizer, which
-// treats a run of Chinese characters as one token.
+// treats a run of Chinese characters as one token. The same holds for Thai and other
+// scripts without word spaces: substring search needs no tokenizer at all
+// (see test/match.test.mjs, fixtures from #1999).
 window.__ModuleLoader__.load({
 	id: "@deepseek-ai/dsh-find",
 	factory: () => {
@@ -138,24 +140,40 @@ window.__ModuleLoader__.load({
 			return nodes;
 		}
 
+		/**
+		 * Pure string matcher behind computeRanges (extracted so tests can load it
+		 * without a DOM: see test/match.test.mjs). Plain substring search, no
+		 * tokenizer — CJK and Thai queries match literally. Returns start offsets
+		 * (UTF-16 code units) of every non-overlapping match.
+		 */
+		function findMatches(text, query) {
+			var offsets = [];
+			var trimmed = query.trim();
+			if (trimmed === "") return offsets;
+			var needle = trimmed.toLowerCase();
+			var haystack = text.toLowerCase();
+			if (haystack.length !== text.length) haystack = text;
+			var from = 0;
+			var at;
+			while ((at = haystack.indexOf(needle, from)) >= 0) {
+				offsets.push(at);
+				from = at + (trimmed.length || 1);
+			}
+			return offsets;
+		}
+
 		function computeRanges(query) {
 			var ranges = [];
 			var trimmed = query.trim();
 			if (trimmed === "") return ranges;
-			var needle = trimmed.toLowerCase();
 			var nodes = textNodes();
 			for (var i = 0; i < nodes.length; i++) {
-				var text = nodes[i].nodeValue;
-				var haystack = text.toLowerCase();
-				if (haystack.length !== text.length) haystack = text;
-				var from = 0;
-				var at;
-				while ((at = haystack.indexOf(needle, from)) >= 0) {
+				var offsets = findMatches(nodes[i].nodeValue, query);
+				for (var j = 0; j < offsets.length; j++) {
 					var range = document.createRange();
-					range.setStart(nodes[i], at);
-					range.setEnd(nodes[i], at + trimmed.length);
+					range.setStart(nodes[i], offsets[j]);
+					range.setEnd(nodes[i], offsets[j] + trimmed.length);
 					ranges.push(range);
-					from = at + (trimmed.length || 1);
 				}
 			}
 			return ranges;
@@ -284,6 +302,8 @@ window.__ModuleLoader__.load({
 
 		exports.apply = apply;
 		exports.inject = [];
+		// Test hook: the pure matcher, so node --test can exercise it without a DOM.
+		exports.findMatches = findMatches;
 		return module.exports;
 	}
 });
