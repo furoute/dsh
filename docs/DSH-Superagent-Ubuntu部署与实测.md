@@ -3,6 +3,8 @@
 > super agent 是 DSH 的扩展包，要求 **POSIX 路径 + loopback Web 服务**。
 > Windows 上跑不起来，Linux 一次成功。
 
+**上游项目**：<https://github.com/deepseek-ai/dsh-superagent-prototype> —— 本文是对它的实践记录，不是它的文档。
+
 **结构**：部署（1-8）→ 两条通道（9-12）→ 四个案例（11、12 内）→ 结论（13）→ 边界与排障（14-16）。
 
 ---
