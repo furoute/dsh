@@ -36,9 +36,9 @@
   → **[完整实录（十八节 + 排障速查表）](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1109.md)**
 
   最容易卡住的三节：
-  [① 为什么选 Ubuntu 而不是 Windows](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1109.md#一为什么选-ubuntu-而不是-windows) ·
-  [② 启动必须绑 127.0.0.1](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1109.md#七启动必须绑-127001) ·
-  [③ 重启后自恢复](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1109.md#十五重启后自恢复两个重启就丢的坑)
+  [① 为什么选 Ubuntu 而不是 Windows](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1109.md) ·
+  [② 启动必须绑 127.0.0.1](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1109.md) ·
+  [③ 重启后自恢复](docs/DSH-Superagent-Ubuntu部署与实测-20261107-1109.md)
 
 ## 🔴 更早更新（2026-11-05）
 
