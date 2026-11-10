@@ -7,10 +7,6 @@
 
 ![Superagent 工作流：入口 → 编排层 → 执行与产出](assets/superagent-workflow.png)
 
-三列对应三个阶段：**入口**（GitHub / 飞书，事件进来）→ **编排层**（Router 评估、立项、派工、跟踪、结案）→ **执行与产出**（Worker 在独立 worktree 干活，出 PR / 报告回到原对话）。
-
-图里两条虚线框是边界：左边 Windows 跑不通（POSIX 路径、loopback 绑定），右边「显性编排」——工单有编号、派工有档案、决策有理由，**差别不在做，在能查**。
-
 **上游项目**：<https://github.com/deepseek-ai/dsh-superagent-prototype> —— 本文是对它的实践记录，不是它的文档。
 
 **结构**：部署（1-8）→ 两条通道（9-12）→ 四个案例（11、12 内）→ 结论（13）→ 边界与排障（14-16）。
