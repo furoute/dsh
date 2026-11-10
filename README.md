@@ -28,7 +28,7 @@
 
 ---
 
-## 🔴 最近更新（2026-11-09）
+## 🔴 最近更新（2026-11-10）
 
 - **super agent 全流程实录**（固定文件名，日期只记在这里）
   → **[docs/DSH-Superagent-Ubuntu-deployment-and-tests.md](docs/DSH-Superagent-Ubuntu-deployment-and-tests.md)**
@@ -40,6 +40,7 @@
   | 2026-11-07 | 部署跑通：SSH、环境、CLI、profile、绑 127.0.0.1、GitHub 专用账号、三个配置块、四条规则 |
   | 2026-11-08 | 补两处「重启就丢」的坑（gh token 在 keyring、`~/.local/bin` 不在 PATH）；第三个实测（开放式研究）；私有仓库即白名单；与普通 DSH 的区别 |
   | 2026-11-09 | 飞书通道打通（八步 + 七个坑）；案例四（飞书下题 + 换 LightVela 模型）；全文重排精简（1238 → 659 行） |
+  | 2026-11-10 | 文件改英文名（不再出现 `%E5%9F%BA` 转义）；合入三方复审：开机自启的判断从「不做」反转为「user 级 systemd + 群内自报」（固定税优先于偶发税，配置成本当初高估）；排障表补两条实测坑（`codex` 等 stdin、改配置不重启）；补「写放大」这笔账 |
 
   最容易卡住的三处：[为什么选 Ubuntu](docs/DSH-Superagent-Ubuntu-deployment-and-tests.md) ·
   [必须绑 127.0.0.1](docs/DSH-Superagent-Ubuntu-deployment-and-tests.md) ·
@@ -311,7 +312,7 @@ dsh --profile headless "只回复两个字：正常"   # 期望：正常（实�
 | [DSH-快速升级手册](docs/DSH-快速升级手册.md) | 版本升级流程 |
 | [DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障](docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md) | 升级后启动失败的真因：环境变量 `DSH_TOOLS_MODE=both`（含弯路清单）|
 | [DSH-0.2.2-rc.1-升级事故与插件恢复](docs/DSH-0.2.2-rc.1-升级事故与插件恢复.md) | 升级后启动失败：`tools.mode` 与 `llm-deepseek-account.models` 双双废弃；含插件恢复与弯路清单 |
-| [DSH-Superagent Ubuntu 部署与实测](docs/DSH-Superagent-Ubuntu-deployment-and-tests.md) | 固定文件名。部署 → GitHub / 飞书两条通道 → 四个实测案例 → 结论。更新日期见「最近更新」 |
+| [DSH-Superagent Ubuntu 部署与实测](docs/DSH-Superagent-Ubuntu-deployment-and-tests.md) | 固定文件名。部署 → GitHub / 飞书两条通道 → 四个实测案例 → 结论。更新日期见「最近更新」（截至 11-10） |
 | [Agent产物归类方法](docs/Agent产物归类方法.md) | Agent 产物组织思路 |
 | [dsh-security-architecture.svg](docs/dsh-security-architecture.svg) | 安全架构图 |
 | [dsh-find 泰语支持说明](docs/dsh-find-泰语支持说明.md) | 无空格文字为什么能搜到：子串匹配 vs FTS 分词的边界，含 0.2.0 的测试与实机验证过程（可直接用于社区回复） |
