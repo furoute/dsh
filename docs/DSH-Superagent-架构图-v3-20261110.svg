@@ -161,7 +161,7 @@
 
   <g id="note-explicit" aria-label="显性编排">
     <rect x="1198" y="866" width="322" height="190" rx="14" fill="#0b1220" stroke="#30363d" stroke-dasharray="6 5" stroke-width="1.2"/>
-    <text x="1216" y="908" font-size="20" font-weight="700" fill="#fbbf24" letter-spacing="1">显性编排</text>
+    <text x="1216" y="908" class="note-h" letter-spacing="1">显性编排</text>
     <text x="1216" y="950" class="node-fine">工单有编号有状态</text>
     <text x="1216" y="980" class="node-fine">派工有独立档案</text>
     <text x="1216" y="1010" class="node-fine">决策留理由 · 可审计</text>
