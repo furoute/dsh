@@ -13,7 +13,7 @@
 
 ## 全流程一图
 
-![Superagent 工作流：入口 → 编排层 → 执行与产出](assets/superagent-workflow.svg)
+![Superagent 工作流：入口 → 编排层 → 执行与产出](assets/superagent-workflow.png)
 
 三列对应三个阶段：**入口**（GitHub / 飞书，事件进来）→ **编排层**（Router 评估、立项、派工、跟踪、结案）→ **执行与产出**（Worker 在独立 worktree 干活，出 PR / 报告回到原对话）。
 
