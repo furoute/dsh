@@ -1,8 +1,5 @@
 # 在 Ubuntu 上部署 dsh-superagent 并跑通全流程
 
-> super agent 是 DSH 的扩展包，要求 **POSIX 路径 + loopback Web 服务**。
-> Windows 上跑不起来，Linux 一次成功。
-
 ## 全流程一图
 
 ![Superagent 工作流：入口 → 编排层 → 执行与产出](assets/superagent-workflow.png)
