@@ -87,7 +87,7 @@
   <g id="node-human" aria-label="人工">
     <rect x="68" y="326" width="330" height="200" rx="18" fill="#0d1b24" stroke="#38bdf8" stroke-opacity="0.92" class="node"/>
     <rect x="68" y="326" width="5" height="200" rx="2.5" fill="#67e8f9"/>
-    <text x="86" y="384" class="node-title" fill="#f8fafc">人工</text>
+    <text x="86" y="384" class="node-title" font-size="34px" font-weight="800" fill="#f8fafc">人工</text>
     <text x="86" y="424" class="node-sub">只抽查，不盯着</text>
     <text x="86" y="486" class="node-fine">提需求 · 验收结果</text>
     <text x="86" y="514" class="node-fine">人点合并，算完成</text>
@@ -95,7 +95,7 @@
 
   <g id="node-entry" aria-label="两个入口">
     <rect x="68" y="596" width="330" height="190" rx="18" fill="#0d1b24" stroke="#38bdf8" stroke-opacity="0.92" class="node"/>
-    <text x="86" y="644" class="node-title" fill="#f8fafc">两个入口</text>
+    <text x="86" y="644" class="node-title" font-size="34px" font-weight="800" fill="#f8fafc">两个入口</text>
     <text x="86" y="680" class="node-sub">GitHub · Issue · PR</text>
     <text x="86" y="708" class="node-sub">飞书群 · @机器人</text>
     <text x="86" y="742" class="node-fine">@agent · 60 秒轮询</text>
@@ -104,7 +104,7 @@
 
   <g id="note-windows" aria-label="Windows 跑不通">
     <rect x="68" y="856" width="330" height="212" rx="14" fill="#0d1b24" stroke="#38bdf8" stroke-opacity="0.92" stroke-dasharray="6 5" stroke-width="1.2"/>
-    <text x="86" y="908" class="node-title" fill="#f8fafc">WINDOWS 跑不通</text>
+    <text x="86" y="908" font-size="34px" font-weight="800" fill="#ffffff">WINDOWS 跑不通</text>
     <text x="86" y="950" class="node-fine">POSIX 路径反斜杠失败</text>
     <text x="86" y="980" class="node-fine">loopback 绑 0.0.0.0 报错</text>
     <text x="86" y="1010" class="node-fine" fill="#34d399">Linux 一次通</text>
@@ -114,7 +114,7 @@
   <g id="node-router" aria-label="Router 编排层">
     <rect x="632" y="326" width="342" height="190" rx="18" fill="#0d201d" stroke="#34d399" stroke-opacity="0.92" class="node"/>
     <rect x="632" y="326" width="5" height="190" rx="2.5" fill="#34d399"/>
-    <text x="654" y="374" class="node-title" fill="#f8fafc">Router · 编排层</text>
+    <text x="654" y="374" class="node-title" font-size="34px" font-weight="800" fill="#f8fafc">Router · 编排层</text>
     <text x="654" y="410" class="node-sub">评估→立项→派工</text>
     <text x="654" y="438" class="node-sub">跟踪→结案 · 每步留档</text>
     <text x="654" y="472" class="node-fine">DSH 0.2.2-rc.1</text>
@@ -123,7 +123,7 @@
 
   <g id="node-model" aria-label="模型可换">
     <rect x="632" y="596" width="342" height="190" rx="18" fill="#0d201d" stroke="#34d399" stroke-opacity="0.92" class="node"/>
-    <text x="654" y="644" class="node-title" fill="#f8fafc">模型可换</text>
+    <text x="654" y="644" class="node-title" font-size="34px" font-weight="800" fill="#f8fafc">模型可换</text>
     <text x="654" y="680" class="node-sub">DeepSeek / LightVela</text>
     <text x="654" y="708" class="node-sub">入口模型都可换</text>
     <text x="654" y="742" class="node-fine">密钥走环境变量</text>
@@ -132,7 +132,7 @@
 
   <g id="node-rules" aria-label="四条规则">
     <rect x="632" y="866" width="342" height="190" rx="18" fill="#0d201d" stroke="#34d399" stroke-opacity="0.92" class="node"/>
-    <text x="654" y="914" class="node-title" fill="#f8fafc">四条规则</text>
+    <text x="654" y="914" class="node-title" font-size="34px" font-weight="800" fill="#f8fafc">四条规则</text>
     <text x="654" y="950" class="node-sub">copy · visual</text>
     <text x="654" y="978" class="node-sub">docs · deps</text>
     <text x="654" y="1012" class="node-fine">规则外，一律先问</text>
@@ -143,7 +143,7 @@
   <g id="node-worker" aria-label="Worker">
     <rect x="1198" y="326" width="322" height="190" rx="18" fill="#241d0c" stroke="#fbbf24" stroke-opacity="0.92" class="node"/>
     <rect x="1198" y="326" width="5" height="190" rx="2.5" fill="#fbbf24"/>
-    <text x="1218" y="374" class="node-title" fill="#f8fafc">Worker ×2</text>
+    <text x="1218" y="374" class="node-title" font-size="34px" font-weight="800" fill="#f8fafc">Worker ×2</text>
     <text x="1218" y="410" class="node-sub">独立 worktree</text>
     <text x="1218" y="438" class="node-sub">一卡一目录</text>
     <text x="1218" y="472" class="node-fine">maxWorkers 2</text>
@@ -152,7 +152,7 @@
 
   <g id="node-pr" aria-label="PR 与报告">
     <rect x="1198" y="596" width="322" height="190" rx="18" fill="#241d0c" stroke="#fbbf24" stroke-opacity="0.92" class="node"/>
-    <text x="1218" y="644" class="node-title" fill="#f8fafc">PR / 报告</text>
+    <text x="1218" y="644" class="node-title" font-size="34px" font-weight="800" fill="#f8fafc">PR / 报告</text>
     <text x="1218" y="680" class="node-sub">回到原对话</text>
     <text x="1218" y="708" class="node-sub">60 秒内出 PR</text>
     <text x="1218" y="742" class="node-fine">身份声明 + 验证</text>
@@ -161,7 +161,7 @@
 
   <g id="note-explicit" aria-label="显性编排">
     <rect x="1198" y="856" width="322" height="212" rx="14" fill="#241d0c" stroke="#fbbf24" stroke-opacity="0.92" stroke-dasharray="6 5" stroke-width="1.2"/>
-    <text x="1216" y="908" class="node-title" fill="#f8fafc">显性编排</text>
+    <text x="1216" y="908" font-size="34px" font-weight="800" fill="#ffffff">显性编排</text>
     <text x="1216" y="950" class="node-fine">工单有编号有状态</text>
     <text x="1216" y="980" class="node-fine">派工有独立档案</text>
     <text x="1216" y="1010" class="node-fine">决策留理由 · 可审计</text>
