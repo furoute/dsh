@@ -18,7 +18,7 @@
 - [特性](#特性)
 - [插件一览](#插件一览)
 - [快速开始](#快速开始)
-- [实践 Issues（已修复）](#实践-issues我们踩过并已修复的)
+- [实践 Issues（已修复）](#实践-issues我们踩过并已修复的) —— 已归置 4 条：升级启动失败、CLI 凭证、资源管理器打开、自动更新回滚
 - [工具一览](#工具一览)
 - [文档一览](#文档一览)
 - [兼容性](#兼容性)
@@ -42,16 +42,10 @@
   | 2026-11-09 | 飞书通道打通（八步 + 七个坑）；案例四（飞书下题 + 换 LightVela 模型）；全文重排精简（1238 → 659 行） |
   | 2026-11-10 | 文件改英文名（不再出现 `%E5%9F%BA` 转义）；合入三方复审：开机自启的判断从「不做」反转为「user 级 systemd + 群内自报」（固定税优先于偶发税，配置成本当初高估）；排障表补两条实测坑（`codex` 等 stdin、改配置不重启）；补「写放大」这笔账 |
 
-- **桌面版自动更新失败：装完就退、版本没变**
-  → **[docs/DSH-0.2.2-rc.2-桌面版自动更新失败与手动替换.md](docs/DSH-0.2.2-rc.2-桌面版自动更新失败与手动替换.md)**
-
-  0.2.2-rc.1 → rc.2 自动更新连续失败四次。根因不是网络、不是权限，是
-  **安装目录被句柄占用**（`MoveFileExW` / Windows error 32）：更新要把旧目录重命名成
-  `.old-{GUID}`，那一刻有杀软/索引/残留子进程占着，改名失败 → 全量回滚。
-
-  判据一句话：**看 `installer-logs` 里的 `MoveFileExW`，别猜。**
-  修法：清残留进程 → 确认目录能改名 → 移走旧目录 → 跑 `pending` 里已下好的安装包。
-  验收看 exe 的 `FileVersion`（**不是** `version` 文件，那写的是 Electron 版本）。
+- **桌面版自动更新「装完就退、版本没变」** —— 根因是安装目录被句柄占用
+  （`MoveFileExW` / Windows error 32），更新回滚。判据看 `installer-logs`。
+  → 已归入 [实践 Issues #4](#issue-4--桌面版自动更新装完就退版本没变2026-11-12)，
+  完整实录见 [docs/DSH-0.2.2-rc.2-桌面版自动更新失败与手动替换.md](docs/DSH-0.2.2-rc.2-桌面版自动更新失败与手动替换.md)
 
   最容易卡住的三处：[为什么选 Ubuntu](docs/DSH-Superagent-Ubuntu-deployment-and-tests.md) ·
   [必须绑 127.0.0.1](docs/DSH-Superagent-Ubuntu-deployment-and-tests.md) ·
@@ -230,6 +224,7 @@ Copy-Item -Recurse plugins\dsh-billing "$env:USERPROFILE\.dsh\local-plugins\dsh-
 | 1 | 升级 `0.2.1-rc.2` 后 DSH 打不开 | 用户级环境变量 `DSH_TOOLS_MODE=both`，新版 `dsh-tools` 只认 `native` / `ptc` | ✅ 已修复并复测 | [升级事故与 DSH_TOOLS_MODE 排障](docs/DSH-0.2.1-rc.2-升级事故与DSH_TOOLS_MODE排障.md) |
 | 2 | CLI（headless）报 `MISSING_CREDENTIAL` | `dsh-headless` bundle 把凭据服务设为 `disabled: true` | ✅ 已修复并复测 | 同上 |
 | 3 | 「用文件资源管理器打开」打不开文件夹 | `runNativeCommand` 固定 `windowsHide: true`，`explorer.exe` 继承 `SW_HIDE` | ✅ 已修复（`0.2.0-rc.2` 官方已内置等价修复） | [部署与迁移总结 · 第八节](docs/桌面版DSH部署与迁移总结.md#八修复实录用文件资源管理器打开按钮打不开文件夹2026-09-28) |
+| 4 | 桌面版自动更新「装完就退、版本没变」 | 更新要把旧目录重命名成 `.old-{GUID}`，那一刻目录被句柄占用（`MoveFileExW` / error 32） → 全量回滚 | ✅ 已修复并复测（改为手动替换 `pending` 中已下好的安装包） | [自动更新失败与手动替换](docs/DSH-0.2.2-rc.2-桌面版自动更新失败与手动替换.md) |
 
 ### Issue #1 · 升级 `0.2.1-rc.2` 后启动失败（2026-10-17）
 
@@ -293,6 +288,48 @@ dsh --profile headless "只回复两个字：正常"   # 期望：正常（实�
 所以 9-28 的等长补丁随升级被覆盖，**无需重打**。
 
 📄 完整实录（含 A/B 对照、窗口计数、`ELECTRON_RUN_AS_NODE` 同批发现与「危险修法」）：**[docs/桌面版DSH部署与迁移总结.md 第八节](docs/桌面版DSH部署与迁移总结.md#八修复实录用文件资源管理器打开按钮打不开文件夹2026-09-28)**
+
+### Issue #4 · 桌面版自动更新「装完就退、版本没变」（2026-11-12）
+
+**现象**：点更新 → 进度跑完 → 安装器自动退出 → 重开还是旧版；重启计算机也没用；反复点，反复一样。用户看到的是「更新没生效」，实际是**每次都在同一环失败并回滚**。
+
+**先看安装器自己的日志，别猜**：
+
+```powershell
+$up = "$env:LOCALAPPDATA\@deepseek-aidsh-desktop-updater"
+Get-ChildItem "$up\installer-logs" | Sort-Object LastWriteTime -Descending | Select-Object -First 3
+type (Get-ChildItem "$up\installer-logs\*" | Sort-Object LastWriteTime -Descending | Select -First 1).FullName
+```
+
+看到这两行就是它：
+
+```
+Operation: MoveFileExW
+Windows error: 32（另一个程序正在使用此文件，进程无法访问）
+```
+
+**真根因**：自动更新的顺序是「旧目录重命名 → 解包新版本 → 删 `.old`」。第①步需要**一个能重命名目录的窗口**，那一刻只要有句柄占着（杀软、索引服务、上一次没退干净的 Electron 子进程、开着该目录的资源管理器），重命名就失败，重试 10 次后整体回滚。
+
+**修法（不用等官方修）** —— 安装包早在 `pending` 里下好了：
+
+```powershell
+# ① 清残留进程
+taskkill /IM "DeepSeek Harness.exe" /F /T
+# ② 确认目录能改名（能 ⇒ 句柄已释放）
+Rename-Item "$env:LOCALAPPDATA\Programs\DeepSeek Harness" "DeepSeek Harness.old-backup"
+# ③ 跑 pending 里的安装包（/S = 静默，实测约 25 秒）
+$exe = Get-ChildItem "$env:LOCALAPPDATA\@deepseek-aidsh-desktop-updater\pending\*.exe" | Select -First 1
+Start-Process $exe.FullName -ArgumentList '/S' -Wait
+```
+
+**⚠️ 验收别看 `version` 文件** —— 它写的是 Electron 版本（如 `44.7.0`），不是 DSH 版本。DH 版本看主程序的 `FileVersion`：
+
+```powershell
+(Get-Item "$env:LOCALAPPDATA\Programs\DeepSeek Harness\DeepSeek Harness.exe").VersionInfo.FileVersion   # 0.2.2-rc.2
+dsh --version                                                                                              # 与桌面版一致才算收尾
+```
+
+📄 完整实录（含五条弯路清单与判据）：**[docs/DSH-0.2.2-rc.2-桌面版自动更新失败与手动替换.md](docs/DSH-0.2.2-rc.2-桌面版自动更新失败与手动替换.md)**
 
 ---
 
