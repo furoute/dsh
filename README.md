@@ -30,8 +30,12 @@
 
 ## 🔴 最近更新（2026-11-12）
 
-- **super agent 全流程实录**（固定文件名，日期只记在这里）
-  → **[docs/DSH-Superagent-Ubuntu-deployment-and-tests.md](docs/DSH-Superagent-Ubuntu-deployment-and-tests.md)**
+**2026-11-12** · 桌面版自动更新「装完就退、版本没变」—— 根因是安装目录被句柄占用（`MoveFileExW` / error 32），更新回滚。判据看 `installer-logs`。→ [实践 Issues #4](#issue-4--桌面版自动更新装完就退版本没变2026-11-12) · [完整实录](docs/DSH-0.2.2-rc.2-桌面版自动更新失败与手动替换.md)
+
+---
+
+**2026-11-10 及之前** · super agent 全流程实录
+→ **[docs/DSH-Superagent-Ubuntu-deployment-and-tests.md](docs/DSH-Superagent-Ubuntu-deployment-and-tests.md)**
 
   一次看完：Ubuntu 部署 → 两条通道 → 四个实测案例 → 结论。
 
@@ -41,11 +45,6 @@
   | 2026-11-08 | 补两处「重启就丢」的坑（gh token 在 keyring、`~/.local/bin` 不在 PATH）；第三个实测（开放式研究）；私有仓库即白名单；与普通 DSH 的区别 |
   | 2026-11-09 | 飞书通道打通（八步 + 七个坑）；案例四（飞书下题 + 换 LightVela 模型）；全文重排精简（1238 → 659 行） |
   | 2026-11-10 | 文件改英文名（不再出现 `%E5%9F%BA` 转义）；合入三方复审：开机自启的判断从「不做」反转为「user 级 systemd + 群内自报」（固定税优先于偶发税，配置成本当初高估）；排障表补两条实测坑（`codex` 等 stdin、改配置不重启）；补「写放大」这笔账 |
-
-- **桌面版自动更新「装完就退、版本没变」** —— 根因是安装目录被句柄占用
-  （`MoveFileExW` / Windows error 32），更新回滚。判据看 `installer-logs`。
-  → 已归入 [实践 Issues #4](#issue-4--桌面版自动更新装完就退版本没变2026-11-12)，
-  完整实录见 [docs/DSH-0.2.2-rc.2-桌面版自动更新失败与手动替换.md](docs/DSH-0.2.2-rc.2-桌面版自动更新失败与手动替换.md)
 
   最容易卡住的三处：[为什么选 Ubuntu](docs/DSH-Superagent-Ubuntu-deployment-and-tests.md) ·
   [必须绑 127.0.0.1](docs/DSH-Superagent-Ubuntu-deployment-and-tests.md) ·
