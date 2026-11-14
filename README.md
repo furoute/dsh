@@ -28,11 +28,11 @@
 
 ---
 
-## 🟢 最近更新（2026-11-13）
+## 🟢 最近更新（2026-11-14）
 
-**2026-11-13** · DeepSeek 发布「全家桶应用 API」，11 项能力逐项实测全部通过 —— 每项带可直接复制的 `curl` 和请求字段。现有配置零改动。
+**2026-11-14** · DeepSeek 发布「全家桶应用 API」，11 项能力逐项实测全部通过 —— 每项带可直接复制的 `curl` 和请求字段。现有配置零改动。
 
-→ **[docs/DeepSeek-toolkit-API-tests.md](docs/DeepSeek-toolkit-API-tests.md)**
+→ **[docs/DeepSeek-toolkit-API-tests-20261114.md](docs/DeepSeek-toolkit-API-tests-20261114.md)**
 
 | 能力 | 接口 |
 |---|---|
@@ -374,7 +374,7 @@ dsh --version                                                                   
 
 | 文档 | 内容 |
 |---|---|
-| [DeepSeek-toolkit-API-tests](docs/DeepSeek-toolkit-API-tests.md) | 11 项接口逐条实测 + curl 示例 + 价格 + 官方链接（2026-11-13） |
+| [DeepSeek-toolkit-API-tests](docs/DeepSeek-toolkit-API-tests-20261114.md) | 11 项接口逐条实测 + curl 示例 + 官方链接（2026-11-14） |
 | [DSH-思维链中文配置记录](docs/DSH-思维链中文配置记录.md) | 让模型思考链输出中文的配置 |
 | [DSH思维链中文化-复用步骤](docs/DSH思维链中文化-复用步骤.md) | 上述配置的可复用步骤 |
 | [DSH-启用run_code-PTC模式-操作手册](docs/DSH-启用run_code-PTC模式-操作手册.md) | PTC 模式启用全过程 |

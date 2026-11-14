@@ -1,6 +1,6 @@
 # DeepSeek 全家桶 API 逐项实测
 
-> 测试时间：2026-11-13
+> 测试时间：2026-11-14
 > 账号：个人账号
 > Key 从环境变量取：`export DEEPSEEK_API_KEY=<你的 Key>`（各自配各自的，勿写入代码）
 > 全部用 curl 直连 `https://api.deepseek.com`，可复现
