@@ -28,6 +28,24 @@
 
 ---
 
+## 🟢 最近更新（2026-11-13）
+
+**2026-11-13** · DeepSeek 发布「全家桶应用 API」，11 项能力逐项实测全部通过 —— 每项带可直接复制的 `curl`、明码价格、14 条官方文档地址。现有配置零改动，用哪个计哪个的费。
+
+→ **[docs/DeepSeek-全家桶API-逐项实测.md](docs/DeepSeek-全家桶API-逐项实测.md)**
+
+| 能力 | 接口 | 价格 |
+|---|---|---|
+| Search / Fetch | `/v1/tools/search` · `/v1/tools/fetch` | 5 元 / 千次 |
+| OCR | `/v1/tools/ocr` | **1.5 元 / 千页** |
+| ASR | `/v1/tools/asr` | 0.78 元/小时（限时 0.39） |
+| TTS | `/v1/tools/tts` | 见文档 |
+| Files / 文件解析 | `/files` + `file_id` | `user_data` 免费 |
+| 联网工具 / 阅读链接 | `deepseek_web_search` · `deepseek_read_url` | 按次 |
+| 图像理解 / 内容安全 | `image_url` · `safety` | 按 token |
+
+---
+
 ## 🔴 最近更新（2026-11-12）
 
 **2026-11-12** · 桌面版自动更新「装完就退、版本没变」—— 根因是安装目录被句柄占用（`MoveFileExW` / error 32），更新回滚。判据看 `installer-logs`。→ [实践 Issues #4](#issue-4--桌面版自动更新装完就退版本没变2026-11-12) · [完整实录](docs/DSH-0.2.2-rc.2-桌面版自动更新失败与手动替换.md)
@@ -350,6 +368,7 @@ dsh --version                                                                   
 
 | 文档 | 内容 |
 |---|---|
+| [DeepSeek-全家桶API-逐项实测](docs/DeepSeek-全家桶API-逐项实测.md) | 11 项接口逐条实测 + curl 示例 + 价格 + 官方链接（2026-11-13） |
 | [DSH-思维链中文配置记录](docs/DSH-思维链中文配置记录.md) | 让模型思考链输出中文的配置 |
 | [DSH思维链中文化-复用步骤](docs/DSH思维链中文化-复用步骤.md) | 上述配置的可复用步骤 |
 | [DSH-启用run_code-PTC模式-操作手册](docs/DSH-启用run_code-PTC模式-操作手册.md) | PTC 模式启用全过程 |
