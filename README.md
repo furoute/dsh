@@ -32,7 +32,7 @@
 
 **2026-11-13** · DeepSeek 发布「全家桶应用 API」，11 项能力逐项实测全部通过 —— 每项带可直接复制的 `curl`、明码价格、14 条官方文档地址。现有配置零改动，用哪个计哪个的费。
 
-→ **[docs/DeepSeek-全家桶API-逐项实测.md](docs/DeepSeek-全家桶API-逐项实测.md)**
+→ **[docs/DeepSeek-toolkit-API-tests.md](docs/DeepSeek-toolkit-API-tests.md)**
 
 | 能力 | 接口 | 价格 |
 |---|---|---|
@@ -368,7 +368,7 @@ dsh --version                                                                   
 
 | 文档 | 内容 |
 |---|---|
-| [DeepSeek-全家桶API-逐项实测](docs/DeepSeek-全家桶API-逐项实测.md) | 11 项接口逐条实测 + curl 示例 + 价格 + 官方链接（2026-11-13） |
+| [DeepSeek-toolkit-API-tests](docs/DeepSeek-toolkit-API-tests.md) | 11 项接口逐条实测 + curl 示例 + 价格 + 官方链接（2026-11-13） |
 | [DSH-思维链中文配置记录](docs/DSH-思维链中文配置记录.md) | 让模型思考链输出中文的配置 |
 | [DSH思维链中文化-复用步骤](docs/DSH思维链中文化-复用步骤.md) | 上述配置的可复用步骤 |
 | [DSH-启用run_code-PTC模式-操作手册](docs/DSH-启用run_code-PTC模式-操作手册.md) | PTC 模式启用全过程 |
