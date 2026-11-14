@@ -86,7 +86,7 @@ curl https://api.deepseek.com/v1/tools/ocr \
 
 **限制**：单文件 100 MiB / 1000 页 / 180 秒内完成。
 
-**计费**：**1.5 元 / 千页**，按识别成功的页数计，失败不计费。
+**计费**：按识别**成功的页数**计，失败或超时不计费。单价见官方价格页。
 
 ### 4. TTS 语音合成
 
@@ -124,7 +124,7 @@ curl https://api.deepseek.com/v1/tools/asr \
 转写  你好，我是蓝莓，正在测试 DeepSeek 的语音合成接口。
 ```
 
-**计费**：**0.78 元/小时，限时 5 折 0.39 元/小时**（按秒计）
+**计费**：按音频**时长**计，精确到秒，不足 1 秒按 1 秒计。单价见官方价格页。
 
 **限制**：8 MiB / 120 秒 / 不支持流式。
 
@@ -152,9 +152,9 @@ curl https://api.deepseek.com/files \
 
 **三种 purpose**：
 
-| purpose | 适用于 | 计费 |
+| purpose | 适用于 | 是否收费 |
 |---|---|---|
-| `user_data` | 图片、纯文本、表格、电子书 | **不计费** |
+| `user_data` | 图片、纯文本、表格、电子书 | **免费** |
 | `text_recognition` | PDF/Word/PPT/图片，只提文字 | 按页 |
 | `rich_layout_recognition` | 图文混排，图也交给模型 | 按页 |
 
@@ -246,25 +246,17 @@ curl https://api.deepseek.com/chat/completions \
 
 ---
 
-## 三、价格总表（只列本次全家桶新增的工具类接口）
+## 三、收费
 
-**模型推理（deepseek-flash / v4-pro 的 token 价）不在本文范围** —— 那是原有计价，与本次发布的工具 API 无关，需要时查[官方价格页](https://api-docs.deepseek.com/zh-cn/quick_start/pricing)。
+**本文不列价格。** 我们不是官方，不代为报价 —— 各接口的当前单价一律以官方价格页为准：
 
-| 项目 | 计费单位 | 价格 | 官方出处 |
-|---|---|---|---|
-| **Search** 网页搜索 | 每 1,000 次成功请求 | **5 元** | 价格页「网页搜索与抓取」 |
-| **Fetch** 网页抓取 | 每 1,000 次成功请求 | **5 元** | 同上 |
-| **OCR** 文字识别 | 每 1,000 页 | **1.5 元** | OCR 指南「计费」 |
-| **ASR** 语音识别 | 每小时音频 | 0.78 元 / **限时 5 折 0.39 元** | ASR 指南「计费」 |
-| **TTS** 语音合成 | 按计费字符 | 见官方定价页 | — |
-| **Files API** `user_data` 上传 | — | **免费** | 文件解析「纯文本、表格与电子书」 |
+**https://api-docs.deepseek.com/zh-cn/quick_start/pricing**
 
-**两处容易误读，已核对原文**：
+几处计价规则（规则不随价格变动，可以照用）：
 
-- **Search 和 Fetch 同价**，都是 5 元 / 千次，**不是两个价**
-- **计费只看成功次数**：`count`（返回条数）不影响单价，搜 1 条和搜 50 条一个价
-
-**宽松之处**：搜索无结果、抓取失败、OCR 超时、识别失败，**都不计费**。
+- 搜索、抓取、OCR、语音识别都**按次数 / 页数 / 时长**计，不按 token
+- **`count`（返回条数）不影响单价**，搜 1 条和搜 50 条一个价
+- 搜索无结果、抓取失败、OCR 超时、识别失败，**均不计费**
 
 ---
 
@@ -275,7 +267,7 @@ curl https://api.deepseek.com/chat/completions \
 | 位置 | 需要改吗 | 原因 |
 |---|---|---|
 | 上网本（Hermes） | ❌ 不用 | 纯 curl，有 Key 就能调 |
-| 台式机 DSH | ❌ 不用 | 搜索早就内置，服务端按次计费 |
+| 台式机 DSH | ❌ 不用 | 搜索早就内置，服务端直接处理 |
 | 本地 llama-server | ❌ 不用 | 两套系统完全独立 |
 
 **DSH 里已经在用的**：`deepseek_web_search`、`deepseek_read_url`、图像理解。
@@ -286,7 +278,7 @@ curl https://api.deepseek.com/chat/completions \
 
 ## 五、最值得用的三个
 
-### ① OCR —— 1000 页 1.5 元
+### ① OCR —— 批量转文字
 
 **场景**：手写服务报告、扫描件、老 PDF 批量转文字。
 
@@ -294,7 +286,7 @@ curl https://api.deepseek.com/chat/completions \
 
 **对比本地**：本地 OCR 要装 rapidocr，折腾且慢；这个一次请求搞定。
 
-### ② ASR —— 一小时 0.39 元
+### ② ASR —— 录音转写
 
 **场景**：会议录音转写、微信语音转文字。
 
@@ -302,11 +294,11 @@ curl https://api.deepseek.com/chat/completions \
 
 **优势**：21 种语言自动识别。
 
-### ③ Search + Fetch —— 一次搜索 5 厘
+### ③ Search + Fetch —— 给 agent 加联网
 
 **场景**：给任何 agent 加联网能力。
 
-**省钱技巧**：**`need_content: true` 一次调用同时拿正文，省掉 Fetch 的 5 元/千次**。
+**省钱技巧**：`need_content: true` 一次调用就能同时拿到搜索结果和正文，**省掉一次 Fetch 调用**。
 
 ---
 
@@ -337,7 +329,7 @@ API       https://api.deepseek.com
 
 ## 附：官方文档地址
 
-**接口和价格若有调整，按这里的为准 —— agent 可以据此自行更新本文件。**
+**接口和价格若有调整，一律按官方文档为准 —— agent 可以据此自行更新本文件。**
 
 | 内容 | 地址 |
 |---|---|
@@ -356,4 +348,4 @@ API       https://api.deepseek.com
 | **错误码** | https://api-docs.deepseek.com/zh-cn/quick_start/error_codes |
 | **限速与隔离** | https://api-docs.deepseek.com/zh-cn/quick_start/rate_limit |
 
-**更新方式**：先看「更新日志」有没有新接口，再核对「模型 & 价格」有没有调价，其余按上表逐项对照。
+**更新方式**：先看「更新日志」有没有新接口；价格一律查上面的官方价格页；其余按上表逐项对照。

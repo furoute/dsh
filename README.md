@@ -30,19 +30,25 @@
 
 ## 🟢 最近更新（2026-11-13）
 
-**2026-11-13** · DeepSeek 发布「全家桶应用 API」，11 项能力逐项实测全部通过 —— 每项带可直接复制的 `curl`、明码价格、14 条官方文档地址。现有配置零改动，用哪个计哪个的费。
+**2026-11-13** · DeepSeek 发布「全家桶应用 API」，11 项能力逐项实测全部通过 —— 每项带可直接复制的 `curl` 和请求字段。现有配置零改动。
 
 → **[docs/DeepSeek-toolkit-API-tests.md](docs/DeepSeek-toolkit-API-tests.md)**
 
-| 能力 | 接口 | 价格 |
-|---|---|---|
-| Search / Fetch | `/v1/tools/search` · `/v1/tools/fetch` | 5 元 / 千次 |
-| OCR | `/v1/tools/ocr` | **1.5 元 / 千页** |
-| ASR | `/v1/tools/asr` | 0.78 元/小时（限时 0.39） |
-| TTS | `/v1/tools/tts` | 见文档 |
-| Files / 文件解析 | `/files` + `file_id` | `user_data` 免费 |
-| 联网工具 / 阅读链接 | `deepseek_web_search` · `deepseek_read_url` | 按次 |
-| 图像理解 / 内容安全 | `image_url` · `safety` | 按 token |
+| 能力 | 接口 |
+|---|---|
+| 网页搜索 | `POST /v1/tools/search` |
+| 网页抓取 | `POST /v1/tools/fetch` |
+| OCR 文字识别 | `POST /v1/tools/ocr` |
+| 语音识别 ASR | `POST /v1/tools/asr` |
+| 语音合成 TTS | `POST /v1/tools/tts` |
+| 文件上传 | `POST /files` |
+| 文件解析（对话引用） | `file_id` 引用 |
+| 联网搜索（服务端工具） | `deepseek_web_search` |
+| 阅读链接（服务端工具） | `deepseek_read_url` |
+| 图像理解 | `image_url` |
+| 模型内容安全 | `safety` |
+
+> 价格不在本仓库列示，请以 [官方价格页](https://api-docs.deepseek.com/zh-cn/quick_start/pricing) 为准。
 
 ---
 
